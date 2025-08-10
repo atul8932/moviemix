@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import "./styles.css";
@@ -8,6 +8,7 @@ const Home = () => {
   const [mobile, setMobile] = useState("");
   const [movie, setMovie] = useState("");
   const [showPayment, setShowPayment] = useState(false);
+  const [requestId, setRequestId] = useState(null);
   const paymentRef = useRef(null);
   const navigate = useNavigate();
 
@@ -15,13 +16,21 @@ const Home = () => {
     e.preventDefault();
     if (movie.trim() && mobile.trim()) {
       try {
-        await addDoc(collection(db, "movieRequests"), {
+        //
+        const docRef = await addDoc(collection(db, "movieRequests"), {
           mobile,
           movieName: movie,
           createdAt: serverTimestamp(),
           status: "pending",
-          downloadLink: ""
+          paymentStatus: "pending",
+          downloadLink: "",
         });
+        setRequestId(docRef.id);
+        // go to payment page
+
+        // after payment make payment to payment done with status payment success
+
+        //
         setShowPayment(true);
       } catch (err) {
         console.error("Error saving movie request:", err);
@@ -38,12 +47,22 @@ const Home = () => {
       paymentRef.current.appendChild(script);
 
       // For testing without actual payment:
-      const handlePaymentSuccess = () => {
-        navigate(`/waiting/${mobile}`);
+      const handlePaymentSuccess = async () => {
+        try {
+          if (requestId) {
+            await updateDoc(doc(db, "movieRequests", requestId), {
+              paymentStatus: "success",
+            });
+          }
+        } catch (error) {
+          console.error("Failed to update payment status:", error);
+        } finally {
+          navigate(`/waiting/${mobile}`);
+        }
       };
       setTimeout(handlePaymentSuccess, 3000);
     }
-  }, [showPayment, mobile, navigate]);
+  }, [showPayment, mobile, navigate, requestId]);
 
   return (
     <div className="home-container">

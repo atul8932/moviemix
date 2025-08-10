@@ -31,6 +31,7 @@ const WaitingPage = () => {
         <>
           <p>Movie: {request.movieName}</p>
           <p>Status: {request.status}</p>
+          <p>Payment: {request.paymentStatus || "pending"}</p>
           {request.downloadLink ? (
             <p>
               Download Link:{" "}
@@ -39,7 +40,11 @@ const WaitingPage = () => {
               </a>
             </p>
           ) : (
-            <p>Waiting for download link...</p>
+            <p>
+              {request.paymentStatus !== "success"
+                ? "Awaiting payment confirmation..."
+                : "Waiting for admin to upload the download link..."}
+            </p>
           )}
         </>
       ) : (
