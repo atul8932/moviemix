@@ -1,19 +1,12 @@
-# MovieMix
+# React + Vite
 
-## Payments (Razorpay Orders + Firebase Functions)
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-- Set environment variables in Firebase Functions:
-  - `RZP_KEY_ID`
-  - `RZP_KEY_SECRET`
-  - `RZP_WEBHOOK_SECRET` (optional for webhook)
+Currently, two official plugins are available:
 
-- Deploy functions after creating the `functions/` folder with code:
-  ```bash
-  cd functions
-  npm i
-  # set envs in your host (or use Firebase config)
-  cd ..
-  firebase deploy --only functions
-  ```
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-- Frontend will call `createOrder` and `verifyPayment` callable functions.
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.

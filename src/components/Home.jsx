@@ -1,29 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { collection, addDoc, serverTimestamp, doc, updateDoc } from "firebase/firestore";
-import { httpsCallable } from "firebase/functions";
-import { db, functions } from "../firebase";
+import { db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import "./styles.css";
-
-const loadRazorpayScript = () =>
-  new Promise((resolve, reject) => {
-    if (window.Razorpay) return resolve();
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = resolve;
-    script.onerror = reject;
-    document.body.appendChild(script);
-  });
 
 const Home = () => {
   const [mobile, setMobile] = useState("");
   const [movie, setMovie] = useState("");
+  const [showPayment, setShowPayment] = useState(false);
+  const [requestId, setRequestId] = useState(null);
+  const paymentRef = useRef(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (movie.trim() && mobile.trim()) {
       try {
+        //
         const docRef = await addDoc(collection(db, "movieRequests"), {
           mobile,
           movieName: movie,
@@ -32,86 +25,71 @@ const Home = () => {
           paymentStatus: "pending",
           downloadLink: "",
         });
-        await startPaymentFlow(docRef.id, mobile);
+        setRequestId(docRef.id);
+        // go to payment page
+
+        // after payment make payment to payment done with status payment success
+
+        //
+        setShowPayment(true);
       } catch (err) {
         console.error("Error saving movie request:", err);
       }
     }
   };
 
-  const startPaymentFlow = async (createdRequestId, mobileNumber) => {
-    try {
-      await loadRazorpayScript();
+  useEffect(() => {
+    if (showPayment && paymentRef.current) {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/payment-button.js";
+      script.setAttribute("data-payment_button_id", "pl_R1CZMVUMb9phyL");
+      script.async = true;
+      paymentRef.current.appendChild(script);
 
-      const createOrder = httpsCallable(functions, "createOrder");
-      const resp = await createOrder({ amount: 4900, currency: "INR", requestId: createdRequestId, mobile: mobileNumber });
-      const { orderId, amount, key } = resp.data;
-
-      const options = {
-        key,
-        order_id: orderId,
-        amount,
-        currency: "INR",
-        name: "MovieMix",
-        description: "Movie request payment",
-        notes: { requestId: createdRequestId, mobile: mobileNumber },
-        handler: async function (response) {
-          try {
-            const verifyPayment = httpsCallable(functions, "verifyPayment");
-            await verifyPayment({
-              requestId: createdRequestId,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
+      // For testing without actual payment:
+      const handlePaymentSuccess = async () => {
+        try {
+          if (requestId) {
+            await updateDoc(doc(db, "movieRequests", requestId), {
+              paymentStatus: "success",
             });
-          } catch (error) {
-            console.error("Payment verification failed:", error);
-          } finally {
-            navigate(`/waiting/${mobileNumber}`);
           }
-        },
-        modal: {
-          ondismiss: async () => {
-            try {
-              await updateDoc(doc(db, "movieRequests", createdRequestId), { paymentStatus: "cancelled" });
-            } finally {
-              navigate(`/waiting/${mobileNumber}`);
-            }
-          },
-        },
-        prefill: { contact: mobileNumber },
-        theme: { color: "#0ea5e9" },
+        } catch (error) {
+          console.error("Failed to update payment status:", error);
+        } finally {
+          navigate(`/waiting/${mobile}`);
+        }
       };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (error) {
-      console.error("Failed to start payment flow:", error);
+      setTimeout(handlePaymentSuccess, 3000);
     }
-  };
+  }, [showPayment, mobile, navigate, requestId]);
 
   return (
     <div className="home-container">
       <h1 className="title">MovieMix</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          className="input-box"
-          placeholder="Enter mobile number..."
-          value={mobile}
-          onChange={(e) => setMobile(e.target.value)}
-        />
-        <input
-          type="text"
-          className="input-box"
-          placeholder="Enter movie name..."
-          value={movie}
-          onChange={(e) => setMovie(e.target.value)}
-        />
-        <button type="submit" className="btn primary">
-          Continue to Payment
-        </button>
-      </form>
+      {!showPayment ? (
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            className="input-box"
+            placeholder="Enter mobile number..."
+            value={mobile}
+            onChange={(e) => setMobile(e.target.value)}
+          />
+          <input
+            type="text"
+            className="input-box"
+            placeholder="Enter movie name..."
+            value={movie}
+            onChange={(e) => setMovie(e.target.value)}
+          />
+          <button type="submit" className="btn primary">
+            Continue to Payment
+          </button>
+        </form>
+      ) : (
+        <div ref={paymentRef}></div>
+      )}
     </div>
   );
 };
