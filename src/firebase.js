@@ -1,6 +1,7 @@
 // Import the functions you need
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getFunctions } from "firebase/functions";
 // (Optional) Analytics if you still want it
 import { getAnalytics } from "firebase/analytics";
 
@@ -21,3 +22,6 @@ const analytics = getAnalytics(app);
 
 // Initialize Firestore
 export const db = getFirestore(app);
+
+// Initialize Cloud Functions (default region)
+export const functions = getFunctions(app);
