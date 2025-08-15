@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./components/Home";
+import Dashboard from "./components/Dashboard";
 import WaitingPage from "./components/WaitingPage";
 import AdminPanel from "./components/AdminPanel";
 
@@ -9,8 +10,9 @@ const App = () => {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        {/* Dynamic route to show waiting page based on mobile number */}
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/waiting/:mobile" element={<WaitingPage />} />
+        <Route path="/waiting" element={<WaitingPage />} />
         <Route path="/admin" element={<AdminPanel />} />
       </Routes>
     </Router>

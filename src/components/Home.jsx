@@ -1,94 +1,160 @@
-import React, { useState, useRef, useEffect } from "react";
-import { collection, addDoc, serverTimestamp, doc, updateDoc } from "firebase/firestore";
-import { db } from "../firebase";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./styles.css";
 
 const Home = () => {
-  const [mobile, setMobile] = useState("");
-  const [movie, setMovie] = useState("");
-  const [showPayment, setShowPayment] = useState(false);
-  const [requestId, setRequestId] = useState(null);
-  const paymentRef = useRef(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authTab, setAuthTab] = useState("login");
+  const [authForm, setAuthForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (movie.trim() && mobile.trim()) {
-      try {
-        //
-        const docRef = await addDoc(collection(db, "movieRequests"), {
-          mobile,
-          movieName: movie,
-          createdAt: serverTimestamp(),
-          status: "pending",
-          paymentStatus: "pending",
-          downloadLink: "",
-        });
-        setRequestId(docRef.id);
-        // go to payment page
-
-        // after payment make payment to payment done with status payment success
-
-        //
-        setShowPayment(true);
-      } catch (err) {
-        console.error("Error saving movie request:", err);
-      }
-    }
+  const handleGetStarted = () => {
+    setShowAuthModal(true);
   };
 
-  useEffect(() => {
-    if (showPayment && paymentRef.current) {
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/payment-button.js";
-      script.setAttribute("data-payment_button_id", "pl_R1CZMVUMb9phyL");
-      script.async = true;
-      paymentRef.current.appendChild(script);
+  const handleAuthSubmit = (e) => {
+    e.preventDefault();
+    // For demo purposes, just navigate to dashboard
+    // In real app, you'd authenticate with Firebase Auth
+    navigate("/dashboard");
+  };
 
-      // For testing without actual payment:
-      const handlePaymentSuccess = async () => {
-        try {
-          if (requestId) {
-            await updateDoc(doc(db, "movieRequests", requestId), {
-              paymentStatus: "success",
-            });
-          }
-        } catch (error) {
-          console.error("Failed to update payment status:", error);
-        } finally {
-          navigate(`/waiting/${mobile}`);
-        }
-      };
-      setTimeout(handlePaymentSuccess, 3000);
-    }
-  }, [showPayment, mobile, navigate, requestId]);
+  const handleInputChange = (e) => {
+    setAuthForm({
+      ...authForm,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   return (
-    <div className="home-container">
-      <h1 className="title">MovieMix</h1>
-      {!showPayment ? (
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            className="input-box"
-            placeholder="Enter mobile number..."
-            value={mobile}
-            onChange={(e) => setMobile(e.target.value)}
-          />
-          <input
-            type="text"
-            className="input-box"
-            placeholder="Enter movie name..."
-            value={movie}
-            onChange={(e) => setMovie(e.target.value)}
-          />
-          <button type="submit" className="btn primary">
-            Continue to Payment
+    <div className="landing-container">
+      {/* Header */}
+      <header className="landing-header">
+        <div className="logo">
+          <span className="logo-icon">🎬</span>
+          <span className="logo-text">MovieHub</span>
+        </div>
+        <div className="header-actions">
+          <button 
+            className="btn btn-text" 
+            onClick={() => setShowAuthModal(true)}
+          >
+            Login
           </button>
-        </form>
-      ) : (
-        <div ref={paymentRef}></div>
+          <button 
+            className="btn btn-primary" 
+            onClick={() => {
+              setAuthTab("signup");
+              setShowAuthModal(true);
+            }}
+          >
+            Sign Up
+          </button>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <main className="hero-section">
+        <div className="hero-content">
+          <h1 className="hero-title">
+            Download Your Movies, Anytime, Anywhere
+          </h1>
+          <p className="hero-subtitle">
+            Request movies optimized for your device. Get them in minutes.
+          </p>
+          <button className="btn btn-primary btn-large" onClick={handleGetStarted}>
+            Get Started
+          </button>
+        </div>
+        <div className="hero-background">
+          <div className="movie-collage"></div>
+        </div>
+      </main>
+
+      {/* Auth Modal */}
+      {showAuthModal && (
+        <div className="modal-overlay" onClick={() => setShowAuthModal(false)}>
+          <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Welcome to MovieHub</h2>
+              <button 
+                className="modal-close" 
+                onClick={() => setShowAuthModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="auth-tabs">
+              <button 
+                className={`auth-tab ${authTab === "login" ? "active" : ""}`}
+                onClick={() => setAuthTab("login")}
+              >
+                Login
+              </button>
+              <button 
+                className={`auth-tab ${authTab === "signup" ? "active" : ""}`}
+                onClick={() => setAuthTab("signup")}
+              >
+                Sign Up
+              </button>
+            </div>
+
+            <form onSubmit={handleAuthSubmit} className="auth-form">
+              {authTab === "signup" && (
+                <div className="form-group">
+                  <label>Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={authForm.name}
+                    onChange={handleInputChange}
+                    placeholder="Enter your name"
+                    required={authTab === "signup"}
+                  />
+                </div>
+              )}
+              
+              <div className="form-group">
+                <label>Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={authForm.email}
+                  onChange={handleInputChange}
+                  placeholder="Enter your email"
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={authForm.password}
+                  onChange={handleInputChange}
+                  placeholder="Enter your password"
+                  required
+                />
+              </div>
+
+              {authTab === "login" && (
+                <div className="form-footer">
+                  <a href="#" className="forgot-password">Forgot password?</a>
+                </div>
+              )}
+
+              <button type="submit" className="btn btn-primary btn-full">
+                {authTab === "login" ? "Login" : "Sign Up"}
+              </button>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
