@@ -1,6 +1,7 @@
 // Import the functions you need
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
 // (Optional) Analytics if you still want it
 import { getAnalytics } from "firebase/analytics";
 
@@ -21,3 +22,9 @@ const analytics = getAnalytics(app);
 
 // Initialize Firestore
 export const db = getFirestore(app);
+
+// Initialize Auth with persistent session (no expiry)
+export const auth = getAuth(app);
+setPersistence(auth, browserLocalPersistence).catch(() => {
+  // Ignore persistence errors; default persistence will apply
+});

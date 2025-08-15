@@ -1,5 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { auth, db } from "../firebase";
+import { 
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  updateProfile
+} from "firebase/auth";
+import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import "./styles.css";
 
 const Home = () => {
@@ -10,24 +18,84 @@ const Home = () => {
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleGetStarted = () => {
-    setShowAuthModal(true);
-  };
+  // Redirect to dashboard if already logged in
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (user) navigate("/dashboard");
+    });
+    return () => unsub();
+  }, [navigate]);
 
-  const handleAuthSubmit = (e) => {
-    e.preventDefault();
-    // For demo purposes, just navigate to dashboard
-    // In real app, you'd authenticate with Firebase Auth
-    navigate("/dashboard");
-  };
+  const handleGetStarted = () => setShowAuthModal(true);
 
   const handleInputChange = (e) => {
-    setAuthForm({
-      ...authForm,
-      [e.target.name]: e.target.value,
-    });
+    setAuthForm({ ...authForm, [e.target.name]: e.target.value });
+  };
+
+  const handleAuthSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      if (authTab === "signup") {
+        // Create account
+        const cred = await createUserWithEmailAndPassword(auth, authForm.email, authForm.password);
+        // Update profile with display name
+        if (authForm.name) {
+          await updateProfile(cred.user, { displayName: authForm.name });
+        }
+        // Create user doc if not exists
+        const userRef = doc(db, "users", cred.user.uid);
+        const snap = await getDoc(userRef);
+        if (!snap.exists()) {
+          await setDoc(userRef, {
+            uid: cred.user.uid,
+            name: authForm.name || "",
+            email: authForm.email,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            role: "user",
+            status: "active"
+          });
+        }
+      } else {
+        // Login
+        await signInWithEmailAndPassword(auth, authForm.email, authForm.password);
+      }
+      // Redirect will happen via onAuthStateChanged
+    } catch (err) {
+      setError(mapAuthError(err?.code));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const mapAuthError = (code) => {
+    switch (code) {
+      case "auth/email-already-in-use":
+        return "Email already in use.";
+      case "auth/invalid-email":
+        return "Invalid email address.";
+      case "auth/weak-password":
+        return "Password must be at least 6 characters.";
+      case "auth/user-not-found":
+      case "auth/wrong-password":
+        return "Incorrect email or password.";
+      case "auth/too-many-requests":
+        return "Too many attempts. Try again later.";
+      default:
+        return "Something went wrong. Please try again.";
+    }
+  };
+
+  const handleTabChange = (tab) => {
+    setAuthTab(tab);
+    setError("");
+    setAuthForm({ name: "", email: "", password: "" });
   };
 
   return (
@@ -41,16 +109,13 @@ const Home = () => {
         <div className="header-actions">
           <button 
             className="btn btn-text" 
-            onClick={() => setShowAuthModal(true)}
+            onClick={() => { setAuthTab("login"); setShowAuthModal(true); }}
           >
             Login
           </button>
           <button 
             className="btn btn-primary" 
-            onClick={() => {
-              setAuthTab("signup");
-              setShowAuthModal(true);
-            }}
+            onClick={() => { setAuthTab("signup"); setShowAuthModal(true); }}
           >
             Sign Up
           </button>
@@ -60,15 +125,9 @@ const Home = () => {
       {/* Hero Section */}
       <main className="hero-section">
         <div className="hero-content">
-          <h1 className="hero-title">
-            Download Your Movies, Anytime, Anywhere
-          </h1>
-          <p className="hero-subtitle">
-            Request movies optimized for your device. Get them in minutes.
-          </p>
-          <button className="btn btn-primary btn-large" onClick={handleGetStarted}>
-            Get Started
-          </button>
+          <h1 className="hero-title">Download Your Movies, Anytime, Anywhere</h1>
+          <p className="hero-subtitle">Request movies optimized for your device. Get them in minutes.</p>
+          <button className="btn btn-primary btn-large" onClick={handleGetStarted}>Get Started</button>
         </div>
         <div className="hero-background">
           <div className="movie-collage"></div>
@@ -81,28 +140,21 @@ const Home = () => {
           <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Welcome to MovieHub</h2>
-              <button 
-                className="modal-close" 
-                onClick={() => setShowAuthModal(false)}
-              >
-                ×
-              </button>
+              <button className="modal-close" onClick={() => setShowAuthModal(false)}>×</button>
             </div>
-            
+
             <div className="auth-tabs">
               <button 
                 className={`auth-tab ${authTab === "login" ? "active" : ""}`}
-                onClick={() => setAuthTab("login")}
-              >
-                Login
-              </button>
+                onClick={() => handleTabChange("login")}
+              >Login</button>
               <button 
                 className={`auth-tab ${authTab === "signup" ? "active" : ""}`}
-                onClick={() => setAuthTab("signup")}
-              >
-                Sign Up
-              </button>
+                onClick={() => handleTabChange("signup")}
+              >Sign Up</button>
             </div>
+
+            {error && <div className="error-message">{error}</div>}
 
             <form onSubmit={handleAuthSubmit} className="auth-form">
               {authTab === "signup" && (
@@ -114,11 +166,11 @@ const Home = () => {
                     value={authForm.name}
                     onChange={handleInputChange}
                     placeholder="Enter your name"
-                    required={authTab === "signup"}
+                    required
                   />
                 </div>
               )}
-              
+
               <div className="form-group">
                 <label>Email</label>
                 <input
@@ -130,7 +182,7 @@ const Home = () => {
                   required
                 />
               </div>
-              
+
               <div className="form-group">
                 <label>Password</label>
                 <input
@@ -140,6 +192,7 @@ const Home = () => {
                   onChange={handleInputChange}
                   placeholder="Enter your password"
                   required
+                  minLength={6}
                 />
               </div>
 
@@ -149,8 +202,8 @@ const Home = () => {
                 </div>
               )}
 
-              <button type="submit" className="btn btn-primary btn-full">
-                {authTab === "login" ? "Login" : "Sign Up"}
+              <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
+                {loading ? <span className="loading-spinner-small"></span> : (authTab === "login" ? "Login" : "Sign Up")}
               </button>
             </form>
           </div>
