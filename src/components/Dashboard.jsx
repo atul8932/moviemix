@@ -8,6 +8,7 @@ import "./styles.css";
 const Dashboard = () => {
   const [mobile, setMobile] = useState("");
   const [movie, setMovie] = useState("");
+  const [language, setLanguage] = useState("english");
   const [orders, setOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -46,6 +47,7 @@ const Dashboard = () => {
         const docRef = await addDoc(collection(db, "movieRequests"), {
           mobile,
           movieName: movie,
+          language,
           email: user.email,
           createdAt: serverTimestamp(),
           status: "pending",
@@ -59,7 +61,8 @@ const Dashboard = () => {
           email: user.email,
           mobile,
           movie,
-          redirect: `${window.location.origin}/dashboard`
+          language,
+          redirect: `${window.location.origin}/#/dashboard`
         });
         window.location.href = `${paymentUrl}?${params.toString()}`;
       } catch (err) {
@@ -195,6 +198,15 @@ const Dashboard = () => {
                     placeholder="e.g., Inception, The Dark Knight"
                     required
                   />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Language</label>
+                  <select value={language} onChange={(e) => setLanguage(e.target.value)} required>
+                    <option value="hindi">Hindi</option>
+                    <option value="english">English</option>
+                  </select>
                 </div>
               </div>
               <button type="submit" className="btn btn-primary">
