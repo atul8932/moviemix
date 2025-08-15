@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { collection, addDoc, serverTimestamp, query, where, onSnapshot } from "firebase/firestore";
-import { db } from "../firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { db, auth } from "../firebase";
 import "./styles.css";
 
 const Dashboard = () => {
@@ -11,34 +12,38 @@ const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [activeMenu, setActiveMenu] = useState("home");
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Mock user data - in real app, get from Firebase Auth
-  const user = {
-    name: "John Doe",
-    email: "john@example.com",
-    avatar: "👤"
-  };
-
+  // Auth guard and user state
   useEffect(() => {
-    // Fetch user's orders
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+      if (!currentUser) {
+        navigate("/");
+      }
+    });
+    return () => unsub();
+  }, [navigate]);
+
+  // Fetch user's orders by email
+  useEffect(() => {
+    if (!user?.email) return;
     const q = query(collection(db, "movieRequests"), where("email", "==", user.email));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const ordersData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const ordersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setOrders(ordersData);
     });
-
     return () => unsubscribe();
-  }, [user.email]);
+  }, [user?.email]);
 
   const handleRequestSubmit = async (e) => {
     e.preventDefault();
-    if (movie.trim() && mobile.trim()) {
+    if (movie.trim() && mobile.trim() && user?.email) {
       try {
-        await addDoc(collection(db, "movieRequests"), {
+        const docRef = await addDoc(collection(db, "movieRequests"), {
           mobile,
           movieName: movie,
           email: user.email,
@@ -47,12 +52,28 @@ const Dashboard = () => {
           paymentStatus: "pending",
           downloadLink: "",
         });
-        setMobile("");
-        setMovie("");
-        navigate("/waiting");
+        // Redirect to Razorpay Payment Page with context
+        const paymentUrl = "https://pages.razorpay.com/pl_R1CkGhUdhWGx7i/view";
+        const params = new URLSearchParams({
+          ref: docRef.id,
+          email: user.email,
+          mobile,
+          movie,
+          redirect: `${window.location.origin}/dashboard`
+        });
+        window.location.href = `${paymentUrl}?${params.toString()}`;
       } catch (err) {
         console.error("Error saving movie request:", err);
       }
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/");
+    } catch (e) {
+      console.error("Logout failed", e);
     }
   };
 
@@ -79,6 +100,22 @@ const Dashboard = () => {
     { id: "profile", label: "Profile", icon: "👤" }
   ];
 
+  if (loading) {
+    return (
+      <div className="dashboard-container">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
+  const dashboardUser = (user.email || "").slice(0, 5);
+  const avatarLetter = (user.email || "U").charAt(0).toUpperCase();
+
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
@@ -104,7 +141,7 @@ const Dashboard = () => {
         </nav>
 
         <div className="sidebar-footer">
-          <button className="nav-item logout-btn">
+          <button className="nav-item logout-btn" onClick={handleLogout}>
             <span className="nav-icon">🚪</span>
             <span className="nav-label">Logout</span>
           </button>
@@ -127,8 +164,8 @@ const Dashboard = () => {
           </div>
           
           <div className="user-menu">
-            <div className="user-avatar">{user.avatar}</div>
-            <span className="user-name">{user.name}</span>
+            <div className="user-avatar">{avatarLetter}</div>
+            <span className="user-name">{dashboardUser}</span>
           </div>
         </header>
 
@@ -140,12 +177,12 @@ const Dashboard = () => {
             <form onSubmit={handleRequestSubmit} className="request-form">
               <div className="form-row">
                 <div className="form-group">
-                  <label>Mobile Model</label>
+                  <label>Mobile Number</label>
                   <input
                     type="text"
                     value={mobile}
                     onChange={(e) => setMobile(e.target.value)}
-                    placeholder="e.g., iPhone 15, Samsung Galaxy"
+                    placeholder="Mobile Number"
                     required
                   />
                 </div>
