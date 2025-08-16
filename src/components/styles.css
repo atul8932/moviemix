@@ -909,3 +909,49 @@ h1, h2, h3, h4, h5, h6 {
 	color: var(--gray-700);
 	margin-top: 6px;
 }
+
+.white-text {
+  color: white !important;
+  text-decoration: none; /* optional, removes underline */
+  transition: color 0.3s ease; /* smooth effect */
+}
+
+.white-text:hover {
+  color: black !important;
+}
+
+/* Star Rating */
+.stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.star {
+  display: inline-block;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--gray-300);
+}
+
+.star::before {
+  content: "☆";
+}
+
+.star.rated::before {
+  content: "★";
+  color: var(--status-yellow);
+}
+
+.star.half::before {
+  content: "★";
+  background: linear-gradient(90deg, var(--status-yellow) 50%, var(--gray-300) 50%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.movie-rate {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--gray-700);
+}
