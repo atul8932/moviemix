@@ -214,10 +214,39 @@ const BollywoodMovies = () => {
 
   return (
     <div style={{ padding: 24 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h1 style={{ fontFamily: "Poppins, sans-serif" }}>Bollywood</h1>
-        <Link className="btn btn-secondary" to="/">← Back</Link>
+     <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 16,
+      }}
+    >
+      {/* Logo on the left */}
+      <div style={{ flex: "1", display: "flex", alignItems: "center" }}>
+      <div style={{ flex: "1", display: "flex", alignItems: "center" }}>
+        <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
+          <div className="logo" style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+            <span className="logo-icon">🎬</span>
+            <span className="logo-text">MovieHub</span>
+          </div>
+        </Link>
       </div>
+      </div>
+
+      {/* Centered Bollywood heading */}
+      <div style={{ flex: "1", textAlign: "center" }}>
+        <h1 style={{ fontFamily: "Poppins, sans-serif", margin: 0 }}>Bollywood</h1>
+      </div>
+
+      {/* Back button on the right */}
+      <div style={{ flex: "1", display: "flex", justifyContent: "flex-end" }}>
+        <Link className="btn btn-secondary" to="/">
+          ← Back
+        </Link>
+      </div>
+    </div>
+
 
       <div className="movie-release">
         <ul style={{ display: "flex", flexWrap: "wrap", gap: 16, listStyle: "none", padding: 0, margin: 0 }}>
