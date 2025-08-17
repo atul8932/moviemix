@@ -1,0 +1,27 @@
+{
+  "movies": [
+    {
+      "id": "war-2",
+      "title": "War 2",
+      "url": "/bollywood/movies/war-2.html",
+      "poster_image": {
+        "webp": "https://images.filmibeat.com/webp/226x283/img/popcorn/movie_posters/war2-20250520111110-20727.jpg",
+        "jpg": "https://images.filmibeat.com/226x283/img/popcorn/movie_posters/war2-20250520111110-20727.jpg",
+        "dimensions": "226x283"
+      },
+      "genre": "Bollywood",
+      "release_date": "14 Aug, 2025",
+      "rating": 2.5,
+      "cast": [
+        {
+          "name": "Hrithik Roshan",
+          "profile_url": "https://www.filmibeat.com/celebs/hrithik-roshan.html"
+        },
+        {
+          "name": "Jr. Ntr",
+          "profile_url": "https://www.filmibeat.com/celebs/jr-ntr.html"
+        }
+      ]
+    }
+  ]
+} 

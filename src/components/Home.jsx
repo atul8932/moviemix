@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { auth, db } from "../firebase";
 import { 
   createUserWithEmailAndPassword,
@@ -106,6 +106,11 @@ const Home = () => {
           <span className="logo-icon">🎬</span>
           <span className="logo-text">MovieHub</span>
         </div>
+        {/* <nav className="header-links" style={{ display: "flex", gap: 16 }}>
+          <Link className="btn btn-text white-text" to="/bollywood" >Bollywood</Link>
+          <Link className="btn btn-text white-text" to="/hollywood">Hollywood</Link>
+          <Link className="btn btn-text white-text" to="/ott">OTT Originals</Link>
+        </nav> */}
         <div className="header-actions">
           <button 
             className="btn btn-primary" 

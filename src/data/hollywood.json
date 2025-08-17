@@ -1,0 +1,140 @@
+{
+  "movies": [
+    {
+      "id": "clika",
+      "title": "Clika",
+      "url": "/hollywood/movies/clika.html",
+      "poster_image": {
+        "webp": "https://images.filmibeat.com/webp/226x283/img/popcorn/movie_posters/clika-20250813161006-23842.jpg",
+        "jpg": "https://images.filmibeat.com/226x283/img/popcorn/movie_posters/clika-20250813161006-23842.jpg",
+        "dimensions": "226x283"
+      },
+      "genre": "Hollywood",
+      "release_date": "15 Aug, 2025",
+      "rating": 3.0,
+      "cast": [
+        { "name": "Eric Roberts", "profile_url": "https://www.filmibeat.com/celebs/eric-roberts.html" },
+        { "name": "Peter Greene", "profile_url": "https://www.filmibeat.com/celebs/peter-greene.html" }
+      ]
+    },
+    {
+      "id": "together",
+      "title": "Together",
+      "url": "/hollywood/movies/together.html",
+      "poster_image": {
+        "webp": "https://images.filmibeat.com/webp/226x283/img/popcorn/movie_posters/together-20250806170727-23829.jpg",
+        "jpg": "https://images.filmibeat.com/226x283/img/popcorn/movie_posters/together-20250806170727-23829.jpg",
+        "dimensions": "226x283"
+      },
+      "genre": "Hollywood",
+      "release_date": "08 Aug, 2025",
+      "rating": 3.5,
+      "cast": [
+        { "name": "Dave Franco", "profile_url": "https://www.filmibeat.com/celebs/dave-franco.html" },
+        { "name": "Alison Brie", "profile_url": "https://www.filmibeat.com/celebs/alison-brie.html" }
+      ]
+    },
+    {
+      "id": "holy-ghost",
+      "title": "Holy Ghost",
+      "url": "/hollywood/movies/holy-ghost.html",
+      "poster_image": {
+        "webp": "https://images.filmibeat.com/webp/226x283/img/popcorn/movie_posters/holyghost-20250806164650-23828.jpg",
+        "jpg": "https://images.filmibeat.com/226x283/img/popcorn/movie_posters/holyghost-20250806164650-23828.jpg",
+        "dimensions": "226x283"
+      },
+      "genre": "Hollywood",
+      "release_date": "08 Aug, 2025",
+      "rating": 2.5,
+      "cast": [
+        { "name": "Jenn Osborne", "profile_url": "https://www.filmibeat.com/celebs/jenn-osborne.html" },
+        { "name": "Aaron Blomberg", "profile_url": "https://www.filmibeat.com/celebs/aaron-blomberg.html" }
+      ]
+    },
+    {
+      "id": "weapons",
+      "title": "Weapons",
+      "url": "/hollywood/movies/weapons.html",
+      "poster_image": {
+        "webp": "https://images.filmibeat.com/webp/226x283/img/popcorn/movie_posters/weapons-20250806153322-23827.jpg",
+        "jpg": "https://images.filmibeat.com/226x283/img/popcorn/movie_posters/weapons-20250806153322-23827.jpg",
+        "dimensions": "226x283"
+      },
+      "genre": "Hollywood",
+      "release_date": "08 Aug, 2025",
+      "rating": 4.0,
+      "cast": [
+        { "name": "Josh Brolin", "profile_url": "https://www.filmibeat.com/celebs/josh-brolin.html" },
+        { "name": "Julia Garner", "profile_url": "https://www.filmibeat.com/celebs/julia-garner.html" }
+      ]
+    },
+    {
+      "id": "in-the-grey",
+      "title": "In the Grey",
+      "url": "/hollywood/movies/in-the-grey.html",
+      "poster_image": {
+        "webp": "https://images.filmibeat.com/webp/226x283/img/popcorn/movie_posters/inthegrey-20250209154627-23483.jpg",
+        "jpg": "https://images.filmibeat.com/226x283/img/popcorn/movie_posters/inthegrey-20250209154627-23483.jpg",
+        "dimensions": "226x283"
+      },
+      "genre": "Hollywood",
+      "release_date": "08 Aug, 2025",
+      "rating": 4.5,
+      "cast": [
+        { "name": "Henry Cavill", "profile_url": "https://www.filmibeat.com/celebs/henry-cavill.html" },
+        { "name": "Jake Gyllenhaal", "profile_url": "https://www.filmibeat.com/celebs/jake-gyllenhaal.html" }
+      ]
+    },
+    {
+      "id": "freakier-friday",
+      "title": "Freakier Friday",
+      "url": "/hollywood/movies/freakier-friday.html",
+      "poster_image": {
+        "webp": "https://images.filmibeat.com/webp/226x283/img/popcorn/movie_posters/freakierfriday-20250209154304-23482.jpg",
+        "jpg": "https://images.filmibeat.com/226x283/img/popcorn/movie_posters/freakierfriday-20250209154304-23482.jpg",
+        "dimensions": "226x283"
+      },
+      "genre": "Hollywood",
+      "release_date": "08 Aug, 2025",
+      "rating": 3.0,
+      "cast": [
+        { "name": "Jamie Lee Curtis", "profile_url": "https://www.filmibeat.com/celebs/jamie-lee-curtis.html" },
+        { "name": "Julia Butters", "profile_url": "https://www.filmibeat.com/celebs/julia-butters.html" }
+      ]
+    },
+    {
+      "id": "the-bad-guys-2",
+      "title": "The Bad Guys 2",
+      "url": "/hollywood/movies/the-bad-guys-2.html",
+      "poster_image": {
+        "webp": "https://images.filmibeat.com/webp/226x283/img/popcorn/movie_posters/thebadguys2-20250730102721-23821.jpg",
+        "jpg": "https://images.filmibeat.com/226x283/img/popcorn/movie_posters/thebadguys2-20250730102721-23821.jpg",
+        "dimensions": "226x283"
+      },
+      "genre": "Hollywood",
+      "release_date": "01 Aug, 2025",
+      "rating": 3.5,
+      "cast": [
+        { "name": "Sam Rockwell", "profile_url": "https://www.filmibeat.com/celebs/sam-rockwell.html" },
+        { "name": "Marc Maron", "profile_url": "https://www.filmibeat.com/celebs/marc-maron.html" }
+      ]
+    },
+    {
+      "id": "the-fantastic-four-first-steps",
+      "title": "The Fantastic Four: First Steps",
+      "url": "/hollywood/movies/the-fantastic-four-first-steps.html",
+      "poster_image": {
+        "webp": "https://images.filmibeat.com/webp/226x283/img/popcorn/movie_posters/thefantasticfourfirststeps-20250703184437-23459.jpg",
+        "jpg": "https://images.filmibeat.com/226x283/img/popcorn/movie_posters/thefantasticfourfirststeps-20250703184437-23459.jpg",
+        "dimensions": "226x283"
+      },
+      "genre": "Hollywood",
+      "release_date": "25 Jul, 2025",
+      "rating": 4.0,
+      "cast": [
+        { "name": "Pedro Pascal", "profile_url": "https://www.filmibeat.com/celebs/pedro-pascal.html" },
+        { "name": "Joseph Quinn", "profile_url": "https://www.filmibeat.com/celebs/joseph-quinn.html" }
+      ]
+    }
+  ]
+} 
