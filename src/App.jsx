@@ -12,7 +12,6 @@ import Terms from "./components/Terms";
 import Privacy from "./components/Privacy";
 import RefundCancellation from "./components/RefundCancellation";
 import News from "./components/news/News";
-import NewsList from "./components/news/NewsList";
 
 const App = () => {
   return (
@@ -30,8 +29,7 @@ const App = () => {
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/refund-cancellation" element={<RefundCancellation />} />
-        <Route path="/news" element={<NewsList />} />
-        <Route path="/news/:id" element={<News />} />
+        <Route path="/news" element={<News />} />
       </Routes>
     </Router>
   );
