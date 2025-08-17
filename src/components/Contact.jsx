@@ -14,8 +14,8 @@ const Contact = () => {
 			<div className="card" style={{ background: "#fff", borderRadius: 12, padding: 24 }}>
 				<p>If you have any questions, feedback, or need support, please reach out:</p>
 				<ul style={{ marginTop: 12, marginLeft: 18 }}>
-					<li>Email: 9386918793ak@gmail.com</li>
-					<li>Phone: +91 6207232718</li>
+					<li>Email: support@moviehub.example</li>
+					<li>Phone: +1 (555) 123-4567</li>
 				</ul>
 				<p style={{ marginTop: 16 }}>We typically respond within 24–48 hours.</p>
 			</div>
