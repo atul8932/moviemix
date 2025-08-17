@@ -127,6 +127,10 @@ const Home = () => {
         <div className="hero-content">
           <h1 className="hero-title">Download Your Movies, Anytime, Anywhere</h1>
           <p className="hero-subtitle">Request movies optimized for your device. Get them in minutes.</p>
+          <p className="hero-subtitle">Download Movies for Just ₹5 – Say Goodbye to Expensive OTT Subscriptions!</p>
+          <p className="hero-subtitle">
+            Tired of juggling multiple OTT platforms and paying high monthly fees? Discover a smarter way to watch your favorite movies by downloading them for just ₹5! Enjoy blockbuster entertainment on your own terms without burning a hole in your pocket. This affordable solution could change how you consume content—no more subscriptions, no more limits. Just pay per movie and watch anytime, anywhere.
+          </p>
           <button className="btn btn-primary btn-large" onClick={handleGetStarted}>Get Started</button>
         </div>
         <div className="hero-background">
