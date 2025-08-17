@@ -7,11 +7,6 @@ import AdminPanel from "./components/AdminPanel";
 import BollywoodMovies from "./components/bollywood/BollywoodMovies";
 import HollywoodMovies from "./components/hollywood/HollywoodMovies";
 import OTTMovies from "./components/ott/OTTMovies";
-import Contact from "./components/Contact";
-import Terms from "./components/Terms";
-import Privacy from "./components/Privacy";
-import RefundCancellation from "./components/RefundCancellation";
-import News from "./components/news/News";
 
 const App = () => {
   return (
@@ -25,11 +20,6 @@ const App = () => {
         <Route path="/hollywood" element={<HollywoodMovies />} />
         <Route path="/ott" element={<OTTMovies />} />
         <Route path="/admin" element={<AdminPanel />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/refund-cancellation" element={<RefundCancellation />} />
-        <Route path="/news" element={<News />} />
       </Routes>
     </Router>
   );

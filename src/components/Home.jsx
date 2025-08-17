@@ -110,7 +110,6 @@ const Home = () => {
           <Link className="btn btn-text white-text" to="/bollywood" >Bollywood</Link>
           <Link className="btn btn-text white-text" to="/hollywood">Hollywood</Link>
           <Link className="btn btn-text white-text" to="/ott">OTT Originals</Link>
-          <Link className="btn btn-text white-text" to="/news">News & Blogs</Link>
         </nav>
         <div className="header-actions">
           <button 
