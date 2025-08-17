@@ -16,13 +16,13 @@ const Footer = () => {
       justifyContent: "center"
     }}>
       <nav style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-        <Link className="btn btn-text white-text" to="/privacy">Privacy Policy</Link>
-        <span style={{ opacity: 0.6 }}>|</span>
-        <Link className="btn btn-text white-text" to="/refund-cancellation">Refund & cancellation policy</Link>
+        <Link className="btn btn-text white-text" to="/contact">Contact us</Link>
         <span style={{ opacity: 0.6 }}>|</span>
         <Link className="btn btn-text white-text" to="/terms">Terms & conditions</Link>
         <span style={{ opacity: 0.6 }}>|</span>
-        <Link className="btn btn-text white-text" to="/contact">Contact us</Link>
+        <Link className="btn btn-text white-text" to="/privacy">Privacy Policy</Link>
+        <span style={{ opacity: 0.6 }}>|</span>
+        <Link className="btn btn-text white-text" to="/refund-cancellation">Refund & cancellation policy</Link>
       </nav>
     </footer>
   );
