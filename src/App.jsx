@@ -4,17 +4,34 @@ import Home from "./components/Home";
 import Dashboard from "./components/Dashboard";
 import WaitingPage from "./components/WaitingPage";
 import AdminPanel from "./components/AdminPanel";
+import ContactUs from "./components/ContactUs";
+import CancellationPolicy from "./components/CancellationPolicy";
+import PrivacyPolicy from "./components/PrivacyPolicy";
+import Footer from "./components/Footer";
+import RefundPolicies from "./components/RefundPolicies";
+import TermsAndConditions from "./components/TermsAndConditions";
 
 const App = () => {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/waiting/:mobile" element={<WaitingPage />} />
-        <Route path="/waiting" element={<WaitingPage />} />
-        <Route path="/admin" element={<AdminPanel />} />
-      </Routes>
+      <div className="flex flex-col min-h-screen">
+        {/* Main Content */}
+        <div className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/waiting/:mobile" element={<WaitingPage />} />
+            <Route path="/waiting" element={<WaitingPage />} />
+            <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/contact-us" element={<ContactUs />} />
+            <Route path="/refund-policies" element={<RefundPolicies />} />
+            <Route path="/cancellation-policy" element={<CancellationPolicy />} />
+            <Route path="/privacy-policies" element={<PrivacyPolicy />} />
+            <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+          </Routes>
+        </div>
+        <Footer />
+      </div>
     </Router>
   );
 };
