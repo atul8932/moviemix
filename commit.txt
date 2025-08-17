@@ -1,0 +1,165 @@
+commit 5e6b9a14119bdc2593872cbaec9361fda1bb3dd6
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sun Aug 17 18:37:45 2025 +0530
+
+    Revert "all four section added"
+    
+    This reverts commit 80d1e47e7e4dc7f6f5fe78d641570ef3370335d5.
+
+commit 994426aceab3eb6c30a98619d219dc17d27f8c8c
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sun Aug 17 18:37:44 2025 +0530
+
+    Revert "test"
+    
+    This reverts commit 0d6d555dba6f082f86b26e1f83d773cef5e051ff.
+
+commit 368c65130269e8b8db2dc904c64b860bebab92bf
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sun Aug 17 18:37:43 2025 +0530
+
+    Revert "news and vlogs"
+    
+    This reverts commit b63077a24c630f1af0b68661e8e5a6b936cca905.
+
+commit 92afcc5dc4051f4de156733b8be6a41982c58de8
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sun Aug 17 18:37:40 2025 +0530
+
+    Revert "news"
+    
+    This reverts commit 6ee36c5ee2fd35d16ebe53fa9b2b3cfeb3b67e9e.
+
+commit 4be6b239c0fe2b5853bbc1b45fcacc5851166310
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sun Aug 17 18:37:37 2025 +0530
+
+    Revert "news format"
+    
+    This reverts commit 25ec0a294cd52fe37c67df9da1093aa6cc836e0f.
+
+commit 9dcfe00c5639bc0b04c40e075f2d209eb016c0a1
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sun Aug 17 18:37:35 2025 +0530
+
+    Revert "Update index.html"
+    
+    This reverts commit dddd1cbb29471224584db327f652599bc65a34e4.
+
+commit a5675347acd972034824e4957dac0f1083c19b12
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sun Aug 17 18:37:33 2025 +0530
+
+    Revert "email"
+    
+    This reverts commit 375f08d28d99c362dc84dcca54fdc43298389b3b.
+
+commit 5b926e3a25a260f49e00d74524b4f5802a008377
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sun Aug 17 18:37:31 2025 +0530
+
+    Revert "footer"
+    
+    This reverts commit f75284c9685d0840080cf5bd3512357da9c85d5a.
+
+commit f75284c9685d0840080cf5bd3512357da9c85d5a
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sun Aug 17 17:58:23 2025 +0530
+
+    footer
+
+commit 375f08d28d99c362dc84dcca54fdc43298389b3b
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sun Aug 17 14:01:01 2025 +0530
+
+    email
+
+commit dddd1cbb29471224584db327f652599bc65a34e4
+Author: atul8932 <111909649+atul8932@users.noreply.github.com>
+Date:   Sun Aug 17 11:37:36 2025 +0530
+
+    Update index.html
+
+commit 25ec0a294cd52fe37c67df9da1093aa6cc836e0f
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sun Aug 17 11:03:22 2025 +0530
+
+    news format
+
+commit 6ee36c5ee2fd35d16ebe53fa9b2b3cfeb3b67e9e
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sun Aug 17 10:34:59 2025 +0530
+
+    news
+
+commit b63077a24c630f1af0b68661e8e5a6b936cca905
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sun Aug 17 10:30:20 2025 +0530
+
+    news and vlogs
+
+commit 0d6d555dba6f082f86b26e1f83d773cef5e051ff
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sun Aug 17 10:23:58 2025 +0530
+
+    test
+
+commit 80d1e47e7e4dc7f6f5fe78d641570ef3370335d5
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sun Aug 17 10:08:09 2025 +0530
+
+    all four section added
+
+commit dc47ec8c11ed93ed075e299634fe8bdc119395ca
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sun Aug 17 09:56:03 2025 +0530
+
+    privavcy policy
+
+commit 7fb9ee52310723ffd00a9f261280ad293e0230f2
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sat Aug 16 21:47:12 2025 +0530
+
+    hollywood
+
+commit c8f5624539ce4273d873904b865223d947a43826
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sat Aug 16 21:32:55 2025 +0530
+
+    ratings added
+
+commit 0acb1ae982ce37d57dbff885a78ce35606e80e9d
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Sat Aug 16 20:53:58 2025 +0530
+
+    bollywood movies
+
+commit 2d9b3286fdc234bf2dcd3f176b2f5d43240daf14
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Fri Aug 15 21:57:29 2025 +0530
+
+    language addition
+
+commit 7940a7c56a103fcc678194cf40778d834d2ceb41
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Fri Aug 15 21:11:11 2025 +0530
+
+    refresh fix
+
+commit df9a8db4f9c7eaccf866608cb3b1358e01f4e9c1
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Fri Aug 15 20:37:42 2025 +0530
+
+    final code
+
+commit f21caf83356be5e0ef143417f5e30997c7cadb5f
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Fri Aug 15 19:25:59 2025 +0530
+
+    login
+
+commit 2ec5c06744501eb3e24ae24675a93dd52f8da562
+Author: bipulkumar <bipul.kumar@voltmoney.in>
+Date:   Fri Aug 15 17:38:25 2025 +0530
+
+    movie link

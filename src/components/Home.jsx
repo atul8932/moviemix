@@ -113,7 +113,7 @@ const Home = () => {
         </nav>
         <div className="header-actions">
           <button 
-            className="btn btn-text" 
+            className="btn btn-primary"  
             onClick={() => { setAuthTab("login"); setShowAuthModal(true); }}
           >
             Login
