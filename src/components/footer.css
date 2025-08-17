@@ -183,7 +183,7 @@
 }
 
 .refund-container h1 {
-  text-align: center;
+  /* text-align: center; */
   font-size: 30px;
   font-weight: 700;
   margin-bottom: 25px;
@@ -225,7 +225,7 @@
 
 
 .terms-container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 40px auto;
   padding: 20px;
   font-family: Arial, Helvetica, sans-serif;
@@ -270,4 +270,28 @@
 
 .terms-container a:hover {
   color: #08121b;
+}
+
+.refund-logo {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.refund-logo .logo {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.refund-logo .logo-icon {
+  font-size: 24px;
+}
+
+.refund-logo .logo-text {
+  font-size: 22px;
+  font-weight: bold;
+  margin-left: 8px;
+  color: #ffffff;
 }

@@ -1,8 +1,19 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import "./footer.css";  
 
 const ContactUs = () => {
   return (
     <div style={{ padding: "2rem", maxWidth: "900px", margin: "0 auto", fontFamily: "Poppins, sans-serif" }}>
+      <div className="refund-logo">
+        <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
+          <div className="logo" style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+            <span className="logo-icon" style={{ fontSize: 24 }}>🎬</span>
+            <span className="logo-text" style={{ fontWeight: "bold", fontSize: 20, marginLeft: 8 }}>MovieHub</span>
+          </div>
+        </Link>
+      </div>
+
       <h2 style={{ marginBottom: "1rem" }}>Contact Us</h2>
 
       <p>

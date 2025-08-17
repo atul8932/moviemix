@@ -6,6 +6,16 @@ import "./footer.css"; // custom css file
 const RefundPolicies = () => {
   return (
     <div className="refund-container">
+     <div className="refund-logo">
+        <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
+          <div className="logo" style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+            <span className="logo-icon" style={{ fontSize: 24 }}>🎬</span>
+            <span className="logo-text" style={{ fontWeight: "bold", fontSize: 20, marginLeft: 8 }}>MovieHub</span>
+          </div>
+        </Link>
+      </div>
+
+
       <h1>Refund & Cancellation Policy</h1>
 
       <p>
