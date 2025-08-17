@@ -5,6 +5,15 @@ import "./footer.css";
 const TermsAndConditions = () => {
   return (
     <div className="terms-container">
+      <div className="refund-logo">
+        <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
+          <div className="logo" style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+            <span className="logo-icon" style={{ fontSize: 24 }}>🎬</span>
+            <span className="logo-text" style={{ fontWeight: "bold", fontSize: 20, marginLeft: 8 }}>MovieHub</span>
+          </div>
+        </Link>
+      </div>
+
       <h1>Terms & Conditions</h1>
       <p>
         Welcome to <span className="highlight">MovieHub</span>. By accessing our

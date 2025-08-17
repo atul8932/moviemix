@@ -1,9 +1,18 @@
 import React from "react";
 import "./footer.css"; // ✅ use the same CSS file as Terms page
+import { Link } from "react-router-dom";
 
 const CancellationPolicy = () => {
   return (
     <div className="terms-container">
+      <div className="refund-logo">
+        <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
+          <div className="logo" style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+            <span className="logo-icon" style={{ fontSize: 24 }}>🎬</span>
+            <span className="logo-text" style={{ fontWeight: "bold", fontSize: 20, marginLeft: 8 }}>MovieHub</span>
+          </div>
+        </Link>
+      </div>
       <h1>Cancellation Policy</h1>
       <p>
         At <span className="highlight">MovieHub</span>, we aim to provide a smooth

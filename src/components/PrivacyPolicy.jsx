@@ -6,6 +6,15 @@ import "./footer.css";
 const PrivacyPolicy = () => {
   return (
     <div className="privacy-container">
+      <div className="refund-logo">
+        <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
+          <div className="logo" style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+            <span className="logo-icon" style={{ fontSize: 24 }}>🎬</span>
+            <span className="logo-text" style={{ fontWeight: "bold", fontSize: 20, marginLeft: 8 }}>MovieHub</span>
+          </div>
+        </Link>
+      </div>
+
       <div className="privacy-card">
         <h1>Privacy Policy</h1>
         <p>
