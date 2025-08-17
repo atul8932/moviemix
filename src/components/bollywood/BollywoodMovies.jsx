@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "../styles.css";
+import Footer from "../Footer";
 
 const BollywoodMovies = () => {
   const moviesData = {
@@ -260,6 +261,8 @@ const BollywoodMovies = () => {
           ))}
         </ul>
       </div>
+
+      <Footer />
     </div>
   );
 };

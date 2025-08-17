@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import "../styles.css";
 import moviesData from "../../data/hollywood.json";
+import Footer from "../Footer";
 
 const HollywoodMovies = () => {
   const movies = (moviesData && moviesData.movies) ? moviesData.movies : [];
@@ -72,6 +73,8 @@ const HollywoodMovies = () => {
           ))}
         </ul>
       </div>
+
+      <Footer />
     </div>
   );
 };

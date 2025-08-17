@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "../styles.css";
+import Footer from "../Footer";
 
 const OTTMovies = () => {
   return (
@@ -13,6 +14,8 @@ const OTTMovies = () => {
       <div style={{ background: "#fff", borderRadius: 12, boxShadow: "var(--shadow-md)", padding: 24 }}>
         <p>This is a placeholder page for OTT Originals. Content will be added here.</p>
       </div>
+
+      <Footer />
     </div>
   );
 };

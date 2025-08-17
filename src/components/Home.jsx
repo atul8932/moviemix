@@ -139,6 +139,17 @@ const Home = () => {
         </div>
       </main>
 
+      {/* Policies Section */}
+      <section style={{ padding: 24, display: "flex", justifyContent: "center" }}>
+        <nav style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
+          <Link className="btn btn-text white-text" to="/terms">Terms & conditions</Link>
+          <span style={{ opacity: 0.6, color: "#fff" }}>|</span>
+          <Link className="btn btn-text white-text" to="/privacy">Privacy Policy</Link>
+          <span style={{ opacity: 0.6, color: "#fff" }}>|</span>
+          <Link className="btn btn-text white-text" to="/refund-cancellation">Refund & cancellation policy</Link>
+        </nav>
+      </section>
+
       {/* Auth Modal */}
       {showAuthModal && (
         <div className="modal-overlay" onClick={() => setShowAuthModal(false)}>
