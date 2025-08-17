@@ -133,6 +133,7 @@ const Home = () => {
           <h1 className="hero-title">Download Your Movies, Anytime, Anywhere</h1>
           <p className="hero-subtitle">Request movies optimized for your device. Get them in minutes.</p>
           <button className="btn btn-primary btn-large" onClick={handleGetStarted}>Get Started</button>
+          {/* Contact Us Section (visible on home without scrolling) */}
         </div>
         <div className="hero-background">
           <div className="movie-collage"></div>
@@ -142,11 +143,13 @@ const Home = () => {
       {/* Policies Section */}
       <section style={{ padding: 24, display: "flex", justifyContent: "center" }}>
         <nav style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
-          <Link className="btn btn-text white-text" to="/terms">Terms & conditions</Link>
-          <span style={{ opacity: 0.6, color: "#fff" }}>|</span>
           <Link className="btn btn-text white-text" to="/privacy">Privacy Policy</Link>
           <span style={{ opacity: 0.6, color: "#fff" }}>|</span>
           <Link className="btn btn-text white-text" to="/refund-cancellation">Refund & cancellation policy</Link>
+          <span style={{ opacity: 0.6, color: "#fff" }}>|</span>
+          <Link className="btn btn-text white-text" to="/terms">Terms & conditions</Link>
+          <span style={{ opacity: 0.6, color: "#fff" }}>|</span>
+          <Link className="btn btn-text white-text" to="/contact">Contact us</Link>
         </nav>
       </section>
 
