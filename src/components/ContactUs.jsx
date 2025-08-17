@@ -31,13 +31,6 @@ const ContactUs = () => {
         Support is available from <strong>10:00 AM – 7:00 PM (IST), Monday to Saturday</strong>.
       </p>
 
-      <h3 style={{ marginTop: "1.5rem" }}>🏢 Registered Office</h3>
-      <p>
-        MovieHub<br />
-        Patna, Bihar – 800001<br />
-        India
-      </p>
-
       <h3 style={{ marginTop: "1.5rem" }}>🛠 Technical Support</h3>
       <p>
         If you face any problems with payments, downloads, or accessing your purchased
