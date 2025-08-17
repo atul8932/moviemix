@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./styles.css";
-import Footer from "./Footer";
 
 const Privacy = () => {
 	return (
@@ -19,8 +18,6 @@ const Privacy = () => {
 				<h3 style={{ marginTop: 16 }}>Your choices</h3>
 				<p>You may request access, correction, or deletion of your data by contacting us.</p>
 			</div>
-
-			<Footer />
 		</div>
 	);
 };

@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./styles.css";
-import Footer from "./Footer";
 
 const Contact = () => {
 	return (
@@ -19,8 +18,6 @@ const Contact = () => {
 				</ul>
 				<p style={{ marginTop: 16 }}>We typically respond within 24–48 hours.</p>
 			</div>
-
-			<Footer />
 		</div>
 	);
 };

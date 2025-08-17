@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./styles.css";
-import Footer from "./Footer";
 
 const Terms = () => {
 	return (
@@ -19,8 +18,6 @@ const Terms = () => {
 				<h3 style={{ marginTop: 16 }}>Liability</h3>
 				<p>Service is provided on an "as is" basis without warranties of any kind. We are not liable for any indirect or consequential damages.</p>
 			</div>
-
-			<Footer />
 		</div>
 	);
 };
