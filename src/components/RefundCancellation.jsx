@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./styles.css";
+import Footer from "./Footer";
 
 const RefundCancellation = () => {
 	return (
@@ -18,6 +19,8 @@ const RefundCancellation = () => {
 				<h3 style={{ marginTop: 16 }}>Cancellations</h3>
 				<p>Orders can be cancelled before processing begins. Once a download link is issued, cancellations are not possible.</p>
 			</div>
+
+			<Footer />
 		</div>
 	);
 };

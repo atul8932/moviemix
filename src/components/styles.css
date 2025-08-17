@@ -955,3 +955,12 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 13px;
   color: var(--gray-700);
 }
+
+/* Appended: Ensure readable text on white cards */
+.card {
+	color: #111827;
+}
+.card a {
+	color: #1E3A8A;
+	text-decoration: underline;
+}
