@@ -1,0 +1,29 @@
+[
+	{
+		"id": "india-lands-on-moon",
+		"title": "India Lands on the Moon!",
+		"author": "Editorial Desk",
+		"publishedAt": "2025-08-15T10:00:00Z",
+		"tags": ["ISRO", "Chandrayaan-3", "Moon"],
+		"subtitles": [
+			{
+				"subtitle": "Chandrayaan-3 becomes first to land on lunar south pole",
+				"description": "ISRO creates history with a soft landing near the moon’s south pole.",
+				"type": "video",
+				"content": "https://www.youtube.com/embed/abcd1234"
+			},
+			{
+				"subtitle": "India's space mission inspires global reactions",
+				"description": "Leaders and scientists around the world praise ISRO’s success.",
+				"type": "image",
+				"content": "https://example.com/images/mission-success.jpg"
+			},
+			{
+				"subtitle": "AI Bot Commentary",
+				"description": "A bot-generated insight on ISRO’s mission and future goals.",
+				"type": "bot",
+				"content": "The Chandrayaan-3 mission showcases India’s growing technological capability in space. Next up, a manned mission?"
+			}
+		]
+	}
+] 
