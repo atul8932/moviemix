@@ -4,6 +4,7 @@ import { collection, addDoc, serverTimestamp, query, where, onSnapshot } from "f
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { db, auth } from "../firebase";
 import "./styles.css";
+import WhatsAppWidget from "./WhatsAppWidget";
 
 const Dashboard = () => {
   const [mobile, setMobile] = useState("");
@@ -281,6 +282,9 @@ const Dashboard = () => {
           </div>
         </div>
       </main>
+
+      {/* Floating WhatsApp Widget */}
+      <WhatsAppWidget />
     </div>
   );
 };
