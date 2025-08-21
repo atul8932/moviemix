@@ -6,6 +6,7 @@ import { db, auth } from "../firebase";
 import "./styles.css";
 import WhatsAppWidget from "./WhatsAppWidget";
 import axios from "axios";
+const PG_HOST = import.meta.env.DEV ? "" : "https://sandbox.cashfree.com";
 import { load } from "@cashfreepayments/cashfree-js";
 
 const CF_CLIENT_ID = import.meta.env.VITE_CASHFREE_CLIENT_ID || "YOUR_CLIENT_ID";
@@ -77,7 +78,7 @@ const Dashboard = () => {
         const check = async () => {
           attempts += 1;
           try {
-            const resp = await axios.get(`/pg/orders/${pending.orderId}` , {
+            const resp = await axios.get(`${PG_HOST}/pg/orders/${pending.orderId}` , {
               headers: {
                 "Accept": "application/json",
                 "x-api-version": "2023-08-01",
@@ -142,12 +143,12 @@ const Dashboard = () => {
             customer_phone: mobile,
           },
           order_meta: {
-            return_url: `${window.location.origin}/cf-return.html?order_id={order_id}`,
+           return_url: `${window.location.origin}/cf-return.html?order_id={order_id}`,
           },
         };
 
         const response = await axios.post(
-          "/pg/orders",
+          `${PG_HOST}/pg/orders`,
           orderPayload,
           {
             headers: {

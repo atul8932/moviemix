@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { load } from "@cashfreepayments/cashfree-js";
+const PG_HOST = import.meta.env.DEV ? "" : "https://sandbox.cashfree.com";
 
 // NOTE: For testing only. Do NOT expose secrets in production.
 const CLIENT_ID = import.meta.env.VITE_CASHFREE_CLIENT_ID || "YOUR_CLIENT_ID";
@@ -55,7 +56,7 @@ const Checkout = () => {
 		try {
 			const { url } = await getAccessToken();
 			const response = await axios.post(
-				"/pg/orders",
+				`${PG_HOST}/pg/orders`,
 				orderPayload,
 				{
 					headers: {
