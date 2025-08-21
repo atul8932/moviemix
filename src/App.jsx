@@ -14,6 +14,7 @@ import PrivacyPolicy from "./components/PrivacyPolicy";
 import Footer from "./components/Footer";
 import RefundPolicies from "./components/RefundPolicies";
 import TermsAndConditions from "./components/TermsAndConditions";
+import Checkout from "./components/Checkout";
 
 const AppContent = () => {
   const location = useLocation();
@@ -36,6 +37,8 @@ const AppContent = () => {
           <Route path="/hollywood" element={<HollywoodMovies />} />
           <Route path="/ott" element={<OTTMovies />} />
           <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+          {/* New route for testing checkout */}
+          <Route path="/checkout" element={<Checkout />} />
         </Routes>
       </div>
 

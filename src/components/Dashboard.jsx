@@ -1,10 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { collection, addDoc, serverTimestamp, query, where, onSnapshot } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { db, auth } from "../firebase";
 import "./styles.css";
 import WhatsAppWidget from "./WhatsAppWidget";
+import axios from "axios";
+import { load } from "@cashfreepayments/cashfree-js";
+
+const CF_CLIENT_ID = import.meta.env.VITE_CASHFREE_CLIENT_ID || "YOUR_CLIENT_ID";
+const CF_CLIENT_SECRET = import.meta.env.VITE_CASHFREE_CLIENT_SECRET || "YOUR_CLIENT_SECRET";
 
 const Dashboard = () => {
   const [mobile, setMobile] = useState("");
@@ -17,6 +22,10 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const cashfreeRef = useRef(null);
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState("");
+  const [paymentStatusInfo, setPaymentStatusInfo] = useState({ state: null, message: "" });
 
   // Auth guard and user state
   useEffect(() => {
@@ -30,6 +39,20 @@ const Dashboard = () => {
     return () => unsub();
   }, [navigate]);
 
+  // Initialize Cashfree SDK (sandbox)
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const cf = await load({ mode: "sandbox" });
+        if (mounted) cashfreeRef.current = cf;
+      } catch (e) {
+        console.error("Cashfree init failed", e);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
   // Fetch user's orders by email
   useEffect(() => {
     if (!user?.email) return;
@@ -41,33 +64,122 @@ const Dashboard = () => {
     return () => unsubscribe();
   }, [user?.email]);
 
+  // After returning from Cashfree, verify payment and create request
+  useEffect(() => {
+    const verifyAndCreate = async () => {
+      try {
+        const pendingStr = localStorage.getItem("cfPendingOrder");
+        if (!pendingStr) return;
+        const pending = JSON.parse(pendingStr);
+        if (!pending?.orderId || !user?.email) return;
+
+        let attempts = 0;
+        const check = async () => {
+          attempts += 1;
+          try {
+            const resp = await axios.get(`/pg/orders/${pending.orderId}` , {
+              headers: {
+                "Accept": "application/json",
+                "x-api-version": "2023-08-01",
+                "x-client-id": CF_CLIENT_ID,
+                "x-client-secret": CF_CLIENT_SECRET,
+              },
+            });
+            const status = (resp?.data?.order_status || "").toUpperCase();
+            if (status === "PAID") {
+              await addDoc(collection(db, "movieRequests"), {
+                mobile: pending.mobile,
+                movieName: pending.movie,
+                language: pending.language,
+                email: user.email,
+                createdAt: serverTimestamp(),
+                status: "pending",
+                paymentStatus: "success",
+                downloadLink: "",
+                cfOrderId: pending.orderId,
+              });
+              localStorage.removeItem("cfPendingOrder");
+              setPaymentStatusInfo({ state: "paid", message: "Payment successful. Request created." });
+              return;
+            }
+            if (status === "CANCELLED" || status === "EXPIRED" || status === "FAILED") {
+              localStorage.removeItem("cfPendingOrder");
+              setPaymentStatusInfo({ state: "failed", message: "Payment failed or expired. Please try again." });
+              return;
+            }
+            setPaymentStatusInfo({ state: "pending", message: "Payment pending. We will keep checking..." });
+            if (attempts < 6) {
+              setTimeout(check, 5000);
+            }
+          } catch (e) {
+            setPaymentStatusInfo({ state: "failed", message: "Could not verify payment. Please retry." });
+          }
+        };
+        check();
+      } catch (e) {
+        console.error("Payment verification failed", e?.response?.data || e?.message);
+      }
+    };
+    verifyAndCreate();
+  }, [user?.email]);
+
   const handleRequestSubmit = async (e) => {
     e.preventDefault();
+    setPayError("");
     if (movie.trim() && mobile.trim() && user?.email) {
       try {
-        const docRef = await addDoc(collection(db, "movieRequests"), {
-          mobile,
-          movieName: movie,
-          language,
-          email: user.email,
-          createdAt: serverTimestamp(),
-          status: "pending",
-          paymentStatus: "pending",
-          downloadLink: "",
+        setPaying(true);
+
+        if (!cashfreeRef.current) {
+          throw new Error("Payment SDK not ready. Please retry.");
+        }
+
+        const orderPayload = {
+          order_amount: 5,
+          order_currency: "INR",
+          customer_details: {
+            customer_id: user.uid || `cust_${Date.now()}`,
+            customer_phone: mobile,
+          },
+          order_meta: {
+            return_url: `${window.location.origin}/cf-return.html?order_id={order_id}`,
+          },
+        };
+
+        const response = await axios.post(
+          "/pg/orders",
+          orderPayload,
+          {
+            headers: {
+              "Accept": "application/json",
+              "x-api-version": "2023-08-01",
+              "Content-Type": "application/json",
+              "x-client-id": CF_CLIENT_ID,
+              "x-client-secret": CF_CLIENT_SECRET,
+            },
+          }
+        );
+
+        const orderId = response?.data?.order_id;
+        const paymentSessionId = response?.data?.payment_session_id || response?.data?.order_token;
+        if (!paymentSessionId || !orderId) {
+          throw new Error("Failed to get payment session.");
+        }
+
+        localStorage.setItem(
+          "cfPendingOrder",
+          JSON.stringify({ orderId, mobile, movie, language })
+        );
+
+        await cashfreeRef.current.checkout({
+          paymentSessionId,
+          redirectTarget: "_self",
         });
-        // Redirect to Razorpay Payment Page with context
-        const paymentUrl = "https://pages.razorpay.com/pl_R1CkGhUdhWGx7i/view";
-        const params = new URLSearchParams({
-          ref: docRef.id,
-          email: user.email,
-          mobile,
-          movie,
-          language,
-          redirect: `${window.location.origin}/#/dashboard`
-        });
-        window.location.href = `${paymentUrl}?${params.toString()}`;
       } catch (err) {
-        console.error("Error saving movie request:", err);
+        console.error("Error in request submit/payment", err?.response?.data || err?.message);
+        setPayError(err?.response?.data?.message || err?.message || "Something went wrong");
+      } finally {
+        setPaying(false);
       }
     }
   };
@@ -210,8 +322,14 @@ const Dashboard = () => {
                   </select>
                 </div>
               </div>
-              <button type="submit" className="btn btn-primary">
-                Request Movie
+              {payError && <div className="error-message" style={{ marginBottom: 8 }}>{payError}</div>}
+              {paymentStatusInfo?.message && (
+                <div className="info-message" style={{ marginBottom: 8 }}>
+                  {paymentStatusInfo.message}
+                </div>
+              )}
+              <button type="submit" className="btn btn-primary" disabled={paying}>
+                {paying ? "Processing..." : "Request Movie"}
               </button>
             </form>
           </div>
