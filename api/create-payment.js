@@ -51,7 +51,7 @@ export default async function handler(req, res) {
     };
 
     // Call Cashfree API to create order
-    const response = await fetch('https://sandbox.cashfree.com/pg/orders', {
+    const response = await fetch('https://api.cashfree.com/pg/orders', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
