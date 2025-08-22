@@ -123,61 +123,9 @@ const Dashboard = () => {
           throw new Error("Payment SDK not ready. Please retry.");
         }
 
-        const orderPayload = {
-          order_amount: 5,
-          order_currency: "INR",
-          customer_details: {
-            customer_id: user.uid || `cust_${Date.now()}`,
-            customer_phone: mobile,
-          },
-          order_meta: {
-           return_url: `${window.location.origin}/cf-return.html?order_id={order_id}`,
-          },
-        };
-
-        // Cashfree Drop Flow - No direct API calls needed
-        // Generate a unique order ID
-        const orderId = `order_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-        
-        // Use Cashfree Drop flow with minimal order data
-        const dropPayload = {
-          orderId: orderId,
-          orderAmount: orderPayload.order_amount,
-          orderCurrency: "INR",
-          customerName: user.email?.split('@')[0] || "Customer",
-          customerEmail: user.email,
-          customerPhone: mobile,
-          returnUrl: `${window.location.origin}/cf-return.html`,
-          notifyUrl: `${window.location.origin}/cf-return.html`,
-          paymentModes: "cc,dc,nb,paypal,upi",
-        };
-
-        // Store order details for verification later
-        const orderData = {
-          orderId,
-          mobile,
-          movie,
-          language,
-          amount: orderPayload.order_amount
-        };
-        
-        localStorage.setItem("cfPendingOrder", JSON.stringify(orderData));
-
-        // Use Cashfree Drop redirect instead of SDK checkout
-        const cashfreeUrl = `https://test.cashfree.com/billpay/checkout/post/submit?` + 
-          `appId=${CF_CLIENT_ID}&` +
-          `orderId=${dropPayload.orderId}&` +
-          `orderAmount=${dropPayload.orderAmount}&` +
-          `orderCurrency=${dropPayload.orderCurrency}&` +
-          `customerName=${encodeURIComponent(dropPayload.customerName)}&` +
-          `customerEmail=${encodeURIComponent(dropPayload.customerEmail)}&` +
-          `customerPhone=${dropPayload.customerPhone}&` +
-          `returnUrl=${encodeURIComponent(dropPayload.returnUrl)}&` +
-          `notifyUrl=${encodeURIComponent(dropPayload.notifyUrl)}&` +
-          `paymentModes=${dropPayload.paymentModes}`;
-
-        // Redirect to Cashfree hosted page
-        window.location.href = cashfreeUrl;
+        // Cashfree payment integration requires a backend server
+        // The payment session ID must be generated server-side for security
+        throw new Error("Backend API required: Payment session ID must be generated server-side to keep credentials secure. Direct browser calls are blocked by CORS policy.");
       } catch (err) {
         console.error("Error in request submit/payment", err?.response?.data || err?.message);
         setPayError(err?.response?.data?.message || err?.message || "Something went wrong");

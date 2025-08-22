@@ -51,20 +51,36 @@ const Checkout = () => {
 			paymentModes: "cc,dc,nb,paypal,upi",
 		};
 
-		// Redirect to Cashfree Drop checkout
-		const cashfreeUrl = `https://test.cashfree.com/billpay/checkout/post/submit?` + 
-			`appId=${CLIENT_ID}&` +
-			`orderId=${dropPayload.orderId}&` +
-			`orderAmount=${dropPayload.orderAmount}&` +
-			`orderCurrency=${dropPayload.orderCurrency}&` +
-			`customerName=${encodeURIComponent(dropPayload.customerName)}&` +
-			`customerEmail=${encodeURIComponent(dropPayload.customerEmail)}&` +
-			`customerPhone=${dropPayload.customerPhone}&` +
-			`returnUrl=${encodeURIComponent(dropPayload.returnUrl)}&` +
-			`notifyUrl=${encodeURIComponent(dropPayload.notifyUrl)}&` +
-			`paymentModes=${dropPayload.paymentModes}`;
+		// Create and submit form for Cashfree Drop Flow
+		const form = document.createElement('form');
+		form.method = 'POST';
+		form.action = 'https://test.cashfree.com/billpay/checkout/post/submit';
+		form.style.display = 'none';
 
-		window.location.href = cashfreeUrl;
+		// Add form fields
+		const fields = {
+			appId: CLIENT_ID,
+			orderId: dropPayload.orderId,
+			orderAmount: dropPayload.orderAmount,
+			orderCurrency: dropPayload.orderCurrency,
+			customerName: dropPayload.customerName,
+			customerEmail: dropPayload.customerEmail,
+			customerPhone: dropPayload.customerPhone,
+			returnUrl: dropPayload.returnUrl,
+			notifyUrl: dropPayload.notifyUrl,
+			paymentModes: dropPayload.paymentModes
+		};
+
+		Object.keys(fields).forEach(key => {
+			const input = document.createElement('input');
+			input.type = 'hidden';
+			input.name = key;
+			input.value = fields[key];
+			form.appendChild(input);
+		});
+
+		document.body.appendChild(form);
+		form.submit();
 		return null; // Will redirect, so return value not needed
 	};
 
