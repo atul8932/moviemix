@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { load } from "@cashfreepayments/cashfree-js";
 
-const API_BASE = "";
+const CLIENT_ID = import.meta.env.VITE_CASHFREE_CLIENT_ID || "YOUR_CLIENT_ID";
+const CLIENT_SECRET = import.meta.env.VITE_CASHFREE_CLIENT_SECRET || "YOUR_CLIENT_SECRET";
 
 const Checkout = () => {
 	const cashfreeRef = useRef(null);
@@ -30,7 +31,7 @@ const Checkout = () => {
 
 	const getAccessToken = async () => {
 		// OAuth token for Cashfree PG APIs
-		const url = `${API_BASE}/api/cashfree`; // Orders API also accepts basic auth with client_id and client_secret in headers
+		const url = 'https://sandbox.cashfree.com/pg/orders'; // Orders API also accepts basic auth with client_id and client_secret in headers
 		return { url };
 	};
 
@@ -50,7 +51,15 @@ const Checkout = () => {
 
 		try {
 			const { url } = await getAccessToken();
-			const response = await axios.post(url, orderPayload);
+			const response = await axios.post(url, orderPayload, {
+				headers: {
+					"Accept": "application/json",
+					"x-api-version": "2023-08-01",
+					"Content-Type": "application/json",
+					"x-client-id": CLIENT_ID,
+					"x-client-secret": CLIENT_SECRET,
+				},
+			});
 			return response?.data?.payment_session_id;
 		} catch (err) {
 			console.error("Cashfree order create error:", err?.response?.data || err?.message);

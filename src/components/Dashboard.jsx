@@ -6,8 +6,10 @@ import { db, auth } from "../firebase";
 import "./styles.css";
 import WhatsAppWidget from "./WhatsAppWidget";
 import axios from "axios";
-const API_BASE = "";
 import { load } from "@cashfreepayments/cashfree-js";
+
+const CF_CLIENT_ID = import.meta.env.VITE_CASHFREE_CLIENT_ID || "YOUR_CLIENT_ID";
+const CF_CLIENT_SECRET = import.meta.env.VITE_CASHFREE_CLIENT_SECRET || "YOUR_CLIENT_SECRET";
 
 
 const Dashboard = () => {
@@ -76,7 +78,14 @@ const Dashboard = () => {
         const check = async () => {
           attempts += 1;
           try {
-            const resp = await axios.get(`${API_BASE}/api/cashfree?orderId=${pending.orderId}`);
+            const resp = await axios.get(`https://sandbox.cashfree.com/pg/orders/${pending.orderId}`, {
+              headers: {
+                "Accept": "application/json",
+                "x-api-version": "2023-08-01",
+                "x-client-id": CF_CLIENT_ID,
+                "x-client-secret": CF_CLIENT_SECRET,
+              },
+            });
             const status = (resp?.data?.order_status || "").toUpperCase();
             if (status === "PAID") {
               await addDoc(collection(db, "movieRequests"), {
@@ -138,9 +147,19 @@ const Dashboard = () => {
           },
         };
 
-        const apiUrl = `${API_BASE}/api/cashfree`;
-        console.log('Making API call to:', apiUrl);
-        const response = await axios.post(apiUrl, orderPayload);
+        const response = await axios.post(
+          'https://sandbox.cashfree.com/pg/orders',
+          orderPayload,
+          {
+            headers: {
+              "Accept": "application/json",
+              "x-api-version": "2023-08-01",
+              "Content-Type": "application/json",
+              "x-client-id": CF_CLIENT_ID,
+              "x-client-secret": CF_CLIENT_SECRET,
+            },
+          }
+        );
 
         const orderId = response?.data?.order_id;
         const paymentSessionId = response?.data?.payment_session_id || response?.data?.order_token;
