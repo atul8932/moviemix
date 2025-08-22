@@ -13,12 +13,21 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const CF_CLIENT_ID = process.env.VITE_CASHFREE_CLIENT_ID;
-  const CF_CLIENT_SECRET = process.env.VITE_CASHFREE_CLIENT_SECRET;
+  const CF_CLIENT_ID = process.env.CASHFREE_CLIENT_ID || process.env.VITE_CASHFREE_CLIENT_ID;
+  const CF_CLIENT_SECRET = process.env.CASHFREE_CLIENT_SECRET || process.env.VITE_CASHFREE_CLIENT_SECRET;
 
   if (!CF_CLIENT_ID || !CF_CLIENT_SECRET) {
+    // Debug: Log available environment variables (remove in production)
+    const envVars = Object.keys(process.env).filter(key => key.includes('CASHFREE'));
+    console.log('Available Cashfree env vars:', envVars);
+    
     return res.status(500).json({ 
-      error: 'Cashfree credentials not configured in environment variables' 
+      error: 'Cashfree credentials not configured in environment variables',
+      debug: {
+        hasClientId: !!CF_CLIENT_ID,
+        hasClientSecret: !!CF_CLIENT_SECRET,
+        availableEnvVars: envVars
+      }
     });
   }
 
