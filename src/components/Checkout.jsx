@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { load } from "@cashfreepayments/cashfree-js";
-const PG_HOST = import.meta.env.DEV ? "" : "https://sandbox.cashfree.com";
+const PG_HOST = "https://sandbox.cashfree.com";
 
 // NOTE: For testing only. Do NOT expose secrets in production.
 const CLIENT_ID = import.meta.env.VITE_CASHFREE_CLIENT_ID || "YOUR_CLIENT_ID";
@@ -61,7 +61,7 @@ const Checkout = () => {
 				{
 					headers: {
 						"Accept": "application/json",
-						"x-api-version": "2023-08-01",
+						"x-api-version": "2023-09-01",
 						"Content-Type": "application/json",
 						"x-client-id": CLIENT_ID,
 						"x-client-secret": CLIENT_SECRET,
