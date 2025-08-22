@@ -13,9 +13,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Replace these with your actual Cashfree credentials
-  const CF_CLIENT_ID = "TEST10765407bb6b69b6cd8c47dbff1b4197";  // Replace with your App ID
-  const CF_CLIENT_SECRET = "cfsk_ma_test_your_secret_key_here";   // Replace with your Secret Key
+  // Your actual Cashfree credentials
+  const CF_CLIENT_ID = "TEST10765407bb72805664932b47d38970456701";
+  const CF_CLIENT_SECRET = "cfsk_ma_test_a711b9dc500cdd7db5ddf39160cea690_edea5ed2";
 
   if (!CF_CLIENT_ID || !CF_CLIENT_SECRET) {
     return res.status(500).json({ 
