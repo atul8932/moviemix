@@ -36,53 +36,42 @@ const Checkout = () => {
 	};
 
 	const createOrder = async () => {
-		// Create order and fetch payment_session_id directly from frontend (testing only)
-		const orderPayload = {
-			order_amount: 5,
-			order_currency: "INR",
-			customer_details: {
-				customer_id: `cust_${Date.now()}`,
-				customer_phone: "9060048489",
-			},
-			order_meta: {
-				return_url: `${window.location.origin}/cf-return.html?order_id={order_id}`,
-			},
+		// Use Cashfree Drop flow - no API calls needed
+		const orderId = `order_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+		
+		const dropPayload = {
+			orderId: orderId,
+			orderAmount: 5,
+			orderCurrency: "INR",
+			customerName: "Test Customer",
+			customerEmail: "test@example.com", 
+			customerPhone: "9060048489",
+			returnUrl: `${window.location.origin}`,
+			notifyUrl: `${window.location.origin}`,
+			paymentModes: "cc,dc,nb,paypal,upi",
 		};
 
-		try {
-			const { url } = await getAccessToken();
-			const response = await axios.post(url, orderPayload, {
-				headers: {
-					"Accept": "application/json",
-					"x-api-version": "2023-08-01",
-					"Content-Type": "application/json",
-					"x-client-id": CLIENT_ID,
-					"x-client-secret": CLIENT_SECRET,
-				},
-			});
-			return response?.data?.payment_session_id;
-		} catch (err) {
-			console.error("Cashfree order create error:", err?.response?.data || err?.message);
-			setError(err?.response?.data?.message || "Failed to create order");
-			return null;
-		}
+		// Redirect to Cashfree Drop checkout
+		const cashfreeUrl = `https://test.cashfree.com/billpay/checkout/post/submit?` + 
+			`appId=${CLIENT_ID}&` +
+			`orderId=${dropPayload.orderId}&` +
+			`orderAmount=${dropPayload.orderAmount}&` +
+			`orderCurrency=${dropPayload.orderCurrency}&` +
+			`customerName=${encodeURIComponent(dropPayload.customerName)}&` +
+			`customerEmail=${encodeURIComponent(dropPayload.customerEmail)}&` +
+			`customerPhone=${dropPayload.customerPhone}&` +
+			`returnUrl=${encodeURIComponent(dropPayload.returnUrl)}&` +
+			`notifyUrl=${encodeURIComponent(dropPayload.notifyUrl)}&` +
+			`paymentModes=${dropPayload.paymentModes}`;
+
+		window.location.href = cashfreeUrl;
+		return null; // Will redirect, so return value not needed
 	};
 
 	const handlePayNow = async () => {
 		setError("");
-		if (!cashfreeRef.current) {
-			setError("Payment SDK not ready. Please retry.");
-			return;
-		}
-		const paymentSessionId = await createOrder();
-		if (!paymentSessionId) return;
-
-		const checkoutOptions = {
-			paymentSessionId,
-			redirectTarget: "_self",
-		};
 		try {
-			await cashfreeRef.current.checkout(checkoutOptions);
+			await createOrder(); // This will redirect to Cashfree
 		} catch (e) {
 			console.error("Checkout failed:", e);
 			setError("Checkout failed. Please try again.");

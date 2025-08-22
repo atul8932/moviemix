@@ -5,11 +5,9 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { db, auth } from "../firebase";
 import "./styles.css";
 import WhatsAppWidget from "./WhatsAppWidget";
-import axios from "axios";
 import { load } from "@cashfreepayments/cashfree-js";
 
 const CF_CLIENT_ID = import.meta.env.VITE_CASHFREE_CLIENT_ID || "YOUR_CLIENT_ID";
-const CF_CLIENT_SECRET = import.meta.env.VITE_CASHFREE_CLIENT_SECRET || "YOUR_CLIENT_SECRET";
 
 
 const Dashboard = () => {
@@ -65,29 +63,23 @@ const Dashboard = () => {
     return () => unsubscribe();
   }, [user?.email]);
 
-  // After returning from Cashfree, verify payment and create request
+  // After returning from Cashfree Drop, check URL params and create request
   useEffect(() => {
-    const verifyAndCreate = async () => {
+    const handleCashfreeReturn = async () => {
       try {
-        const pendingStr = localStorage.getItem("cfPendingOrder");
-        if (!pendingStr) return;
-        const pending = JSON.parse(pendingStr);
-        if (!pending?.orderId || !user?.email) return;
+        // Check URL parameters for payment status
+        const urlParams = new URLSearchParams(window.location.search);
+        const txStatus = urlParams.get('txStatus');
+        const orderId = urlParams.get('orderId');
+        const txMsg = urlParams.get('txMsg');
 
-        let attempts = 0;
-        const check = async () => {
-          attempts += 1;
-          try {
-            const resp = await axios.get(`https://sandbox.cashfree.com/pg/orders/${pending.orderId}`, {
-              headers: {
-                "Accept": "application/json",
-                "x-api-version": "2023-08-01",
-                "x-client-id": CF_CLIENT_ID,
-                "x-client-secret": CF_CLIENT_SECRET,
-              },
-            });
-            const status = (resp?.data?.order_status || "").toUpperCase();
-            if (status === "PAID") {
+        if (txStatus && orderId) {
+          const pendingStr = localStorage.getItem("cfPendingOrder");
+          if (!pendingStr) return;
+          const pending = JSON.parse(pendingStr);
+
+          if (pending?.orderId === orderId && user?.email) {
+            if (txStatus === 'SUCCESS') {
               await addDoc(collection(db, "movieRequests"), {
                 mobile: pending.mobile,
                 movieName: pending.movie,
@@ -97,31 +89,27 @@ const Dashboard = () => {
                 status: "pending",
                 paymentStatus: "success",
                 downloadLink: "",
-                cfOrderId: pending.orderId,
+                cfOrderId: orderId,
+                txMsg: txMsg || ""
               });
               localStorage.removeItem("cfPendingOrder");
               setPaymentStatusInfo({ state: "paid", message: "Payment successful. Request created." });
-              return;
-            }
-            if (status === "CANCELLED" || status === "EXPIRED" || status === "FAILED") {
+              
+              // Clean URL
+              window.history.replaceState({}, document.title, window.location.pathname);
+            } else {
               localStorage.removeItem("cfPendingOrder");
-              setPaymentStatusInfo({ state: "failed", message: "Payment failed or expired. Please try again." });
-              return;
+              setPaymentStatusInfo({ state: "failed", message: `Payment failed: ${txMsg || "Unknown error"}` });
             }
-            setPaymentStatusInfo({ state: "pending", message: "Payment pending. We will keep checking..." });
-            if (attempts < 6) {
-              setTimeout(check, 5000);
-            }
-          } catch (e) {
-            setPaymentStatusInfo({ state: "failed", message: "Could not verify payment. Please retry." });
           }
-        };
-        check();
+        }
       } catch (e) {
-        console.error("Payment verification failed", e?.response?.data || e?.message);
+        console.error("Payment verification failed", e?.message);
+        setPaymentStatusInfo({ state: "failed", message: "Could not verify payment. Please retry." });
       }
     };
-    verifyAndCreate();
+    
+    handleCashfreeReturn();
   }, [user?.email]);
 
   const handleRequestSubmit = async (e) => {
@@ -147,35 +135,49 @@ const Dashboard = () => {
           },
         };
 
-        const response = await axios.post(
-          'https://sandbox.cashfree.com/pg/orders',
-          orderPayload,
-          {
-            headers: {
-              "Accept": "application/json",
-              "x-api-version": "2023-08-01",
-              "Content-Type": "application/json",
-              "x-client-id": CF_CLIENT_ID,
-              "x-client-secret": CF_CLIENT_SECRET,
-            },
-          }
-        );
+        // Cashfree Drop Flow - No direct API calls needed
+        // Generate a unique order ID
+        const orderId = `order_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+        
+        // Use Cashfree Drop flow with minimal order data
+        const dropPayload = {
+          orderId: orderId,
+          orderAmount: orderPayload.order_amount,
+          orderCurrency: "INR",
+          customerName: user.email?.split('@')[0] || "Customer",
+          customerEmail: user.email,
+          customerPhone: mobile,
+          returnUrl: `${window.location.origin}/cf-return.html`,
+          notifyUrl: `${window.location.origin}/cf-return.html`,
+          paymentModes: "cc,dc,nb,paypal,upi",
+        };
 
-        const orderId = response?.data?.order_id;
-        const paymentSessionId = response?.data?.payment_session_id || response?.data?.order_token;
-        if (!paymentSessionId || !orderId) {
-          throw new Error("Failed to get payment session.");
-        }
+        // Store order details for verification later
+        const orderData = {
+          orderId,
+          mobile,
+          movie,
+          language,
+          amount: orderPayload.order_amount
+        };
+        
+        localStorage.setItem("cfPendingOrder", JSON.stringify(orderData));
 
-        localStorage.setItem(
-          "cfPendingOrder",
-          JSON.stringify({ orderId, mobile, movie, language })
-        );
+        // Use Cashfree Drop redirect instead of SDK checkout
+        const cashfreeUrl = `https://test.cashfree.com/billpay/checkout/post/submit?` + 
+          `appId=${CF_CLIENT_ID}&` +
+          `orderId=${dropPayload.orderId}&` +
+          `orderAmount=${dropPayload.orderAmount}&` +
+          `orderCurrency=${dropPayload.orderCurrency}&` +
+          `customerName=${encodeURIComponent(dropPayload.customerName)}&` +
+          `customerEmail=${encodeURIComponent(dropPayload.customerEmail)}&` +
+          `customerPhone=${dropPayload.customerPhone}&` +
+          `returnUrl=${encodeURIComponent(dropPayload.returnUrl)}&` +
+          `notifyUrl=${encodeURIComponent(dropPayload.notifyUrl)}&` +
+          `paymentModes=${dropPayload.paymentModes}`;
 
-        await cashfreeRef.current.checkout({
-          paymentSessionId,
-          redirectTarget: "_self",
-        });
+        // Redirect to Cashfree hosted page
+        window.location.href = cashfreeUrl;
       } catch (err) {
         console.error("Error in request submit/payment", err?.response?.data || err?.message);
         setPayError(err?.response?.data?.message || err?.message || "Something went wrong");
