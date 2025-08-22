@@ -63,23 +63,30 @@ const Dashboard = () => {
     return () => unsubscribe();
   }, [user?.email]);
 
-  // After returning from Cashfree Drop, check URL params and create request
+  // After returning from Cashfree, verify payment status
   useEffect(() => {
-    const handleCashfreeReturn = async () => {
+    const verifyAndCreateRequest = async () => {
       try {
-        // Check URL parameters for payment status
-        const urlParams = new URLSearchParams(window.location.search);
-        const txStatus = urlParams.get('txStatus');
-        const orderId = urlParams.get('orderId');
-        const txMsg = urlParams.get('txMsg');
+        const pendingStr = localStorage.getItem("cfPendingOrder");
+        if (!pendingStr || !user?.email) return;
+        
+        const pending = JSON.parse(pendingStr);
+        if (!pending?.orderId) return;
 
-        if (txStatus && orderId) {
-          const pendingStr = localStorage.getItem("cfPendingOrder");
-          if (!pendingStr) return;
-          const pending = JSON.parse(pendingStr);
+        let attempts = 0;
+        const checkPaymentStatus = async () => {
+          attempts += 1;
+          try {
+            const response = await fetch(`/api/verify-payment?orderId=${pending.orderId}`);
+            const data = await response.json();
 
-          if (pending?.orderId === orderId && user?.email) {
-            if (txStatus === 'SUCCESS') {
+            if (!data.success) {
+              throw new Error(data.error);
+            }
+
+            const status = (data.order_status || "").toUpperCase();
+            
+            if (status === "PAID") {
               await addDoc(collection(db, "movieRequests"), {
                 mobile: pending.mobile,
                 movieName: pending.movie,
@@ -89,27 +96,38 @@ const Dashboard = () => {
                 status: "pending",
                 paymentStatus: "success",
                 downloadLink: "",
-                cfOrderId: orderId,
-                txMsg: txMsg || ""
+                cfOrderId: pending.orderId,
+                paymentMethod: data.payment_method || ""
               });
               localStorage.removeItem("cfPendingOrder");
               setPaymentStatusInfo({ state: "paid", message: "Payment successful. Request created." });
-              
-              // Clean URL
-              window.history.replaceState({}, document.title, window.location.pathname);
-            } else {
-              localStorage.removeItem("cfPendingOrder");
-              setPaymentStatusInfo({ state: "failed", message: `Payment failed: ${txMsg || "Unknown error"}` });
+              return;
             }
+            
+            if (status === "CANCELLED" || status === "EXPIRED" || status === "FAILED") {
+              localStorage.removeItem("cfPendingOrder");
+              setPaymentStatusInfo({ state: "failed", message: "Payment failed or expired. Please try again." });
+              return;
+            }
+            
+            // Payment is still pending, check again after a delay
+            setPaymentStatusInfo({ state: "pending", message: "Payment verification in progress..." });
+            if (attempts < 6) {
+              setTimeout(checkPaymentStatus, 5000);
+            }
+          } catch (e) {
+            console.error("Payment verification error:", e.message);
+            setPaymentStatusInfo({ state: "failed", message: "Could not verify payment. Please retry." });
           }
-        }
+        };
+
+        checkPaymentStatus();
       } catch (e) {
         console.error("Payment verification failed", e?.message);
-        setPaymentStatusInfo({ state: "failed", message: "Could not verify payment. Please retry." });
       }
     };
     
-    handleCashfreeReturn();
+    verifyAndCreateRequest();
   }, [user?.email]);
 
   const handleRequestSubmit = async (e) => {
@@ -123,9 +141,47 @@ const Dashboard = () => {
           throw new Error("Payment SDK not ready. Please retry.");
         }
 
-        // Cashfree payment integration requires a backend server
-        // The payment session ID must be generated server-side for security
-        throw new Error("Backend API required: Payment session ID must be generated server-side to keep credentials secure. Direct browser calls are blocked by CORS policy.");
+        // Create payment order via our backend API
+        const paymentRequest = {
+          orderAmount: 5,
+          customerPhone: mobile,
+          customerEmail: user.email,
+          returnUrl: `${window.location.origin}/#/dashboard`
+        };
+
+        const response = await fetch('/api/create-payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(paymentRequest)
+        });
+
+        const paymentData = await response.json();
+
+        if (!paymentData.success) {
+          throw new Error(paymentData.error || 'Failed to create payment order');
+        }
+
+        // Store order details for verification later
+        const orderData = {
+          orderId: paymentData.order_id,
+          mobile,
+          movie,
+          language,
+          amount: 5
+        };
+        
+        localStorage.setItem("cfPendingOrder", JSON.stringify(orderData));
+
+        // Use Cashfree SDK with payment session ID from backend
+        await cashfreeRef.current.checkout({
+          paymentSessionId: paymentData.payment_session_id,
+          redirectTarget: "_self",
+          appearance: {
+            primaryColor: "#6366f1"
+          }
+        });
       } catch (err) {
         console.error("Error in request submit/payment", err?.response?.data || err?.message);
         setPayError(err?.response?.data?.message || err?.message || "Something went wrong");
