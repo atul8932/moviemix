@@ -76,9 +76,7 @@ const Dashboard = () => {
         const check = async () => {
           attempts += 1;
           try {
-            const resp = await axios.get(`${API_BASE}/api/orders`, {
-              params: { orderId: pending.orderId }
-            });
+            const resp = await axios.get(`${API_BASE}/api/cashfree?orderId=${pending.orderId}`);
             const status = (resp?.data?.order_status || "").toUpperCase();
             if (status === "PAID") {
               await addDoc(collection(db, "movieRequests"), {
@@ -141,7 +139,7 @@ const Dashboard = () => {
         };
 
         const response = await axios.post(
-          `${API_BASE}/api/orders`,
+          `${API_BASE}/api/cashfree`,
           orderPayload
         );
 

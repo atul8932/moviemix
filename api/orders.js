@@ -1,5 +1,3 @@
-const axios = require('axios');
-
 export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -19,6 +17,8 @@ export default async function handler(req, res) {
   }
 
   try {
+    const axios = (await import('axios')).default;
+    
     if (req.method === 'POST') {
       // Create order
       const response = await axios.post(

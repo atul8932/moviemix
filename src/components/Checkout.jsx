@@ -30,7 +30,7 @@ const Checkout = () => {
 
 	const getAccessToken = async () => {
 		// OAuth token for Cashfree PG APIs
-		const url = `${API_BASE}/api/orders`; // Orders API also accepts basic auth with client_id and client_secret in headers
+		const url = `${API_BASE}/api/cashfree`; // Orders API also accepts basic auth with client_id and client_secret in headers
 		return { url };
 	};
 
