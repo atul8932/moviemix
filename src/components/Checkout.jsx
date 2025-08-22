@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { load } from "@cashfreepayments/cashfree-js";
 
-const API_BASE = import.meta.env.DEV ? "" : "";
+const API_BASE = "";
 
 const Checkout = () => {
 	const cashfreeRef = useRef(null);

@@ -6,7 +6,7 @@ import { db, auth } from "../firebase";
 import "./styles.css";
 import WhatsAppWidget from "./WhatsAppWidget";
 import axios from "axios";
-const API_BASE = import.meta.env.DEV ? "" : "";
+const API_BASE = "";
 import { load } from "@cashfreepayments/cashfree-js";
 
 
@@ -138,10 +138,9 @@ const Dashboard = () => {
           },
         };
 
-        const response = await axios.post(
-          `${API_BASE}/api/cashfree`,
-          orderPayload
-        );
+        const apiUrl = `${API_BASE}/api/cashfree`;
+        console.log('Making API call to:', apiUrl);
+        const response = await axios.post(apiUrl, orderPayload);
 
         const orderId = response?.data?.order_id;
         const paymentSessionId = response?.data?.payment_session_id || response?.data?.order_token;
