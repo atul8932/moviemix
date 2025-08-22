@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/pg': {
-        target: 'https://sandbox.cashfree.com',
+      '/api': {
+        target: 'http://localhost:3000',
         changeOrigin: true,
         secure: true,
       },

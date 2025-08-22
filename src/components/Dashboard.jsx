@@ -6,11 +6,9 @@ import { db, auth } from "../firebase";
 import "./styles.css";
 import WhatsAppWidget from "./WhatsAppWidget";
 import axios from "axios";
-const PG_HOST = import.meta.env.DEV ? "" : "https://sandbox.cashfree.com";
+const API_BASE = import.meta.env.DEV ? "" : "";
 import { load } from "@cashfreepayments/cashfree-js";
 
-const CF_CLIENT_ID = import.meta.env.VITE_CASHFREE_CLIENT_ID || "YOUR_CLIENT_ID";
-const CF_CLIENT_SECRET = import.meta.env.VITE_CASHFREE_CLIENT_SECRET || "YOUR_CLIENT_SECRET";
 
 const Dashboard = () => {
   const [mobile, setMobile] = useState("");
@@ -78,13 +76,8 @@ const Dashboard = () => {
         const check = async () => {
           attempts += 1;
           try {
-            const resp = await axios.get(`${PG_HOST}/pg/orders/${pending.orderId}` , {
-              headers: {
-                "Accept": "application/json",
-                "x-api-version": "2023-08-01",
-                "x-client-id": CF_CLIENT_ID,
-                "x-client-secret": CF_CLIENT_SECRET,
-              },
+            const resp = await axios.get(`${API_BASE}/api/orders`, {
+              params: { orderId: pending.orderId }
             });
             const status = (resp?.data?.order_status || "").toUpperCase();
             if (status === "PAID") {
@@ -148,17 +141,8 @@ const Dashboard = () => {
         };
 
         const response = await axios.post(
-          `${PG_HOST}/pg/orders`,
-          orderPayload,
-          {
-            headers: {
-              "Accept": "application/json",
-              "x-api-version": "2023-08-01",
-              "Content-Type": "application/json",
-              "x-client-id": CF_CLIENT_ID,
-              "x-client-secret": CF_CLIENT_SECRET,
-            },
-          }
+          `${API_BASE}/api/orders`,
+          orderPayload
         );
 
         const orderId = response?.data?.order_id;

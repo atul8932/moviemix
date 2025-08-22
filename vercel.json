@@ -1,0 +1,11 @@
+{
+  "functions": {
+    "api/orders.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "env": {
+    "VITE_CASHFREE_CLIENT_ID": "@cashfree-client-id",
+    "VITE_CASHFREE_CLIENT_SECRET": "@cashfree-client-secret"
+  }
+}
