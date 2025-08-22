@@ -1,11 +1,26 @@
 {
   "functions": {
-    "api/orders.js": {
+    "api/*.js": {
       "runtime": "nodejs18.x"
     }
   },
-  "env": {
-    "VITE_CASHFREE_CLIENT_ID": "@cashfree-client-id",
-    "VITE_CASHFREE_CLIENT_SECRET": "@cashfree-client-secret"
-  }
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
+    }
+  ]
 }
