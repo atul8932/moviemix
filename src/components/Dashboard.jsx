@@ -6,9 +6,12 @@ import { db, auth } from "../firebase";
 import "./styles.css";
 import WhatsAppWidget from "./WhatsAppWidget";
 // import { load } from "@cashfreepayments/cashfree-js"; // Removed to avoid SDK issues
+import { load } from "@cashfreepayments/cashfree-js";
 
-const CF_CLIENT_ID = import.meta.env.VITE_CASHFREE_CLIENT_ID || "YOUR_CLIENT_ID";
-
+const CF_CLIENT_ID = import.meta.env.VITE_CASHFREE_CLIENT_ID || "";
+const CF_CLIENT_SECRET = import.meta.env.VITE_CASHFREE_CLIENT_SECRET || "";
+const APP_BASE_URL = import.meta.env.VITE_DEV_URL || window.location.origin;
+const PG_BASE = import.meta.env.DEV ? "/pg" : "https://sandbox.cashfree.com/pg";
 
 const Dashboard = () => {
   const [mobile, setMobile] = useState("");
@@ -24,6 +27,7 @@ const Dashboard = () => {
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState("");
   const [paymentStatusInfo, setPaymentStatusInfo] = useState({ state: null, message: "" });
+  const cashfreeRef = useRef(null);
 
   // Auth guard and user state
   useEffect(() => {
@@ -37,8 +41,19 @@ const Dashboard = () => {
     return () => unsub();
   }, [navigate]);
 
-  // Removed Cashfree SDK initialization to avoid PaymentJSInterface errors
-  // Using direct payment links instead
+  // Initialize Cashfree SDK (sandbox)
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const cf = await load({ mode: "sandbox" });
+        if (mounted) cashfreeRef.current = cf;
+      } catch (e) {
+        console.error("Cashfree init failed", e);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   // Fetch user's orders by email
   useEffect(() => {
@@ -65,14 +80,16 @@ const Dashboard = () => {
         const checkPaymentStatus = async () => {
           attempts += 1;
           try {
-            const response = await fetch(`/api/verify-payment?orderId=${pending.orderId}`);
-            const data = await response.json();
-
-            if (!data.success) {
-              throw new Error(data.error);
-            }
-
-            const status = (data.order_status || "").toUpperCase();
+            const resp = await fetch(`${PG_BASE}/orders/${pending.orderId}`, {
+              headers: {
+                'Accept': 'application/json',
+                'x-api-version': '2023-08-01',
+                'x-client-id': CF_CLIENT_ID,
+                'x-client-secret': CF_CLIENT_SECRET,
+              },
+            });
+            const data = await resp.json();
+            const status = (data?.order_status || "").toUpperCase();
             
             if (status === "PAID") {
               await addDoc(collection(db, "movieRequests"), {
@@ -128,45 +145,45 @@ const Dashboard = () => {
         // No SDK check needed - using direct payment links
 
         // Create payment order via our backend API
-        const paymentRequest = {
-          orderAmount: 5,
-          customerPhone: mobile,
-          customerEmail: user.email,
-          returnUrl: `${window.location.origin}/#/dashboard`
+        const orderPayload = {
+          order_amount: 5,
+          order_currency: "INR",
+          customer_details: {
+            customer_id: user?.uid || `cust_${Date.now()}`,
+            customer_phone: mobile,
+          },
+          order_meta: {
+            return_url: `${APP_BASE_URL}#/dashboard`,
+          },
         };
 
-        const response = await fetch('/api/create-payment', {
+        const response = await fetch(`${PG_BASE}/orders`, {
           method: 'POST',
           headers: {
+            'Accept': 'application/json',
+            'x-api-version': '2023-08-01',
             'Content-Type': 'application/json',
+            'x-client-id': CF_CLIENT_ID,
+            'x-client-secret': CF_CLIENT_SECRET,
           },
-          body: JSON.stringify(paymentRequest)
+          body: JSON.stringify(orderPayload)
         });
 
-        const paymentData = await response.json();
-
-        if (!paymentData.success) {
-          throw new Error(paymentData.error || 'Failed to create payment order');
+        const data = await response.json();
+        const orderId = data?.order_id;
+        const paymentSessionId = data?.payment_session_id || data?.order_token;
+        if (!orderId || !paymentSessionId) {
+          throw new Error('Failed to create payment order');
         }
 
-        // Store order details for verification later
-        const orderData = {
-          orderId: paymentData.order_id,
-          mobile,
-          movie,
-          language,
-          amount: 5
-        };
-        
-        localStorage.setItem("cfPendingOrder", JSON.stringify(orderData));
+        localStorage.setItem("cfPendingOrder", JSON.stringify({ orderId, mobile, movie, language }));
 
-        // Use direct payment link for reliable redirection
-        if (paymentData.payment_link) {
-          console.log("Redirecting to payment:", paymentData.payment_link);
-          window.location.href = paymentData.payment_link;
-        } else {
-          throw new Error("No payment link available");
-        }
+        // Open Cashfree hosted checkout; it will return to order_meta.return_url
+        if (!cashfreeRef.current) throw new Error("Payment SDK not ready.");
+        await cashfreeRef.current.checkout({
+          paymentSessionId,
+          redirectTarget: "_self",
+        });
       } catch (err) {
         console.error("Error in request submit/payment", err?.response?.data || err?.message);
         setPayError(err?.response?.data?.message || err?.message || "Something went wrong");

@@ -36,6 +36,7 @@ export default async function handler(req, res) {
     const orderId = `order_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
     // Create order payload for Cashfree
+    debugger;
     const orderPayload = {
       order_id: orderId,
       order_amount: parseFloat(orderAmount),
