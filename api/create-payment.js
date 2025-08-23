@@ -77,9 +77,10 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       order_id: data.order_id,
-      payment_session_id: data.payment_session_id,
+      payment_session_id: data.order_token,
       order_amount: data.order_amount,
-      cashfree_order_id: data.cf_order_id
+      cashfree_order_id: data.cf_order_id,
+      payment_link: data.payment_link
     });
 
   } catch (error) {
