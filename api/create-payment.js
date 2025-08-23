@@ -1,43 +1,43 @@
 export default async function handler(req, res) {
-  console.log('=== CREATE-PAYMENT FUNCTION CALLED ===');
-  console.log('Method:', req.method);
-  console.log('Headers:', req.headers);
-  console.log('Body:', req.body);
-  console.log('URL:', req.url);
-  
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    console.log('Handling OPTIONS preflight request');
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'POST') {
-    console.log('Method not allowed:', req.method);
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  // Get Cashfree credentials from environment variables
-  const CF_CLIENT_ID = process.env.CF_CLIENT_ID;
-  const CF_CLIENT_SECRET = process.env.CF_CLIENT_SECRET;
-  
-  console.log('Environment Variables:');
-  console.log('- CF_CLIENT_ID:', CF_CLIENT_ID ? CF_CLIENT_ID.substring(0, 10) + '...' : 'NOT SET');
-  console.log('- CF_CLIENT_SECRET:', CF_CLIENT_SECRET ? CF_CLIENT_SECRET.substring(0, 10) + '...' : 'NOT SET');
-  console.log('- CF_API_URL:', process.env.CF_API_URL || 'NOT SET (using default)');
-
-  if (!CF_CLIENT_ID || !CF_CLIENT_SECRET) {
-    console.error('Missing Cashfree credentials');
-    return res.status(500).json({ 
-      error: 'Cashfree credentials not configured' 
-    });
-  }
-
   try {
+    console.log('=== CREATE-PAYMENT FUNCTION CALLED ===');
+    console.log('Method:', req.method);
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
+    console.log('URL:', req.url);
+    
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      console.log('Handling OPTIONS preflight request');
+      return res.status(200).end();
+    }
+
+    if (req.method !== 'POST') {
+      console.log('Method not allowed:', req.method);
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    // Get Cashfree credentials from environment variables
+    const CF_CLIENT_ID = process.env.CF_CLIENT_ID;
+    const CF_CLIENT_SECRET = process.env.CF_CLIENT_SECRET;
+    
+    console.log('Environment Variables:');
+    console.log('- CF_CLIENT_ID:', CF_CLIENT_ID ? CF_CLIENT_ID.substring(0, 10) + '...' : 'NOT SET');
+    console.log('- CF_CLIENT_SECRET:', CF_CLIENT_SECRET ? CF_CLIENT_SECRET.substring(0, 10) + '...' : 'NOT SET');
+    console.log('- CF_API_URL:', process.env.CF_API_URL || 'NOT SET (using default)');
+
+    if (!CF_CLIENT_ID || !CF_CLIENT_SECRET) {
+      console.error('Missing Cashfree credentials');
+      return res.status(500).json({ 
+        error: 'Cashfree credentials not configured' 
+      });
+    }
+
     const { orderAmount, customerPhone, customerEmail, returnUrl } = req.body;
     
     console.log('Request Body Parsed:');
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
     // Generate unique order ID
     const orderId = `order_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
-    // Create order payload for Cshfree (matching working curl exactly)
+    // Create order payload for Cashfree (matching working curl exactly)
     const orderPayload = {
       order_amount: parseFloat(orderAmount),
       order_currency: "INR",
@@ -64,9 +64,9 @@ export default async function handler(req, res) {
         customer_id: `bpaagIWG4lMSrIpO92vtIc5A3w23`, // Use exact customer_id from curl
         customer_phone: customerPhone,
       },
-              order_meta: {
-          return_url: returnUrl || (req.headers.origin || "http://localhost:5173") + "#/dashboard"
-        },
+      order_meta: {
+        return_url: returnUrl || (req.headers.origin || "http://localhost:5173") + "#/dashboard"
+      },
     };
 
     // Log the URL and payload being sent
@@ -130,7 +130,9 @@ export default async function handler(req, res) {
     return res.status(200).json(responsePayload);
 
   } catch (error) {
-    console.error('Payment creation error:', error.message);
+    console.error('=== FUNCTION CRASHED ===');
+    console.error('Error:', error.message);
+    console.error('Stack:', error.stack);
     return res.status(500).json({
       error: 'Internal server error',
       message: error.message
