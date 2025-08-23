@@ -3,6 +3,10 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  // Prevent caching to ensure fresh payment status
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
 
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
@@ -50,6 +54,9 @@ export default async function handler(req, res) {
     }
 
     const orderData = await response.json();
+    
+    // Log payment status for debugging
+    console.log(`Payment verification for ${orderId}: Status=${orderData.order_status}, Amount=${orderData.order_amount}`);
     
     return res.status(200).json({
       success: true,
