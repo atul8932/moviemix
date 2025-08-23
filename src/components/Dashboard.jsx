@@ -38,17 +38,41 @@ const Dashboard = () => {
     return () => unsub();
   }, [navigate]);
 
-  // Initialize Cashfree SDK (sandbox)
+  // Initialize Cashfree SDK
   useEffect(() => {
     let mounted = true;
-    (async () => {
+    const initCashfree = async () => {
       try {
-        const cf = await load({ mode: "production" });
-        if (mounted) cashfreeRef.current = cf;
+        // Add a small delay to ensure DOM is ready
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        const cf = await load({ 
+          mode: "production"
+        });
+        
+        if (mounted) {
+          cashfreeRef.current = cf;
+          console.log("Cashfree SDK initialized successfully");
+        }
       } catch (e) {
-        console.error("Cashfree init failed", e);
+        console.error("Cashfree init failed:", e);
+        // Retry once after a delay
+        setTimeout(async () => {
+          if (!mounted) return;
+          try {
+            const cf = await load({ mode: "production" });
+            if (mounted) {
+              cashfreeRef.current = cf;
+              console.log("Cashfree SDK initialized on retry");
+            }
+          } catch (retryError) {
+            console.error("Cashfree retry init failed:", retryError);
+          }
+        }, 1000);
       }
-    })();
+    };
+    
+    initCashfree();
     return () => { mounted = false; };
   }, []);
 
@@ -174,14 +198,26 @@ const Dashboard = () => {
         
         localStorage.setItem("cfPendingOrder", JSON.stringify(orderData));
 
-        // Use Cashfree SDK with payment session ID from backend
-        await cashfreeRef.current.checkout({
-          paymentSessionId: paymentData.payment_session_id,
-          redirectTarget: "_self",
-          appearance: {
-            primaryColor: "#6366f1"
+        // Try using Cashfree SDK first, fallback to direct link
+        try {
+          if (cashfreeRef.current && paymentData.payment_session_id) {
+            const checkoutResult = await cashfreeRef.current.checkout({
+              paymentSessionId: paymentData.payment_session_id,
+              redirectTarget: "_self"
+            });
+            console.log("Checkout result:", checkoutResult);
+          } else {
+            throw new Error("SDK not available, using fallback");
           }
-        });
+        } catch (sdkError) {
+          console.warn("SDK checkout failed, using direct link:", sdkError);
+          // Fallback to direct payment link
+          if (paymentData.payment_link) {
+            window.location.href = paymentData.payment_link;
+          } else {
+            throw new Error("No payment link available");
+          }
+        }
       } catch (err) {
         console.error("Error in request submit/payment", err?.response?.data || err?.message);
         setPayError(err?.response?.data?.message || err?.message || "Something went wrong");

@@ -9,18 +9,25 @@ const Checkout = () => {
 
 	useEffect(() => {
 		let mounted = true;
-		(async () => {
+		const initCashfree = async () => {
 			try {
+				await new Promise(resolve => setTimeout(resolve, 100));
 				const cashfree = await load({ mode: "production" });
 				if (mounted) {
 					cashfreeRef.current = cashfree;
+					console.log("Cashfree SDK initialized successfully");
 				}
 			} catch (e) {
-				setError("Failed to initialize payment SDK.");
+				console.error("Cashfree init failed:", e);
+				if (mounted) {
+					setError("Failed to initialize payment SDK.");
+				}
 			} finally {
 				if (mounted) setIsInitializing(false);
 			}
-		})();
+		};
+		
+		initCashfree();
 		return () => {
 			mounted = false;
 		};
@@ -56,14 +63,25 @@ const Checkout = () => {
 				throw new Error(paymentData.error || 'Failed to create payment order');
 			}
 
-			// Use Cashfree SDK with payment session ID from backend
-			await cashfreeRef.current.checkout({
-				paymentSessionId: paymentData.payment_session_id,
-				redirectTarget: "_self",
-				appearance: {
-					primaryColor: "#6366f1"
+			// Try using Cashfree SDK first, fallback to direct link
+			try {
+				if (cashfreeRef.current && paymentData.payment_session_id) {
+					await cashfreeRef.current.checkout({
+						paymentSessionId: paymentData.payment_session_id,
+						redirectTarget: "_self"
+					});
+				} else {
+					throw new Error("SDK not available, using fallback");
 				}
-			});
+			} catch (sdkError) {
+				console.warn("SDK checkout failed, using direct link:", sdkError);
+				// Fallback to direct payment link
+				if (paymentData.payment_link) {
+					window.location.href = paymentData.payment_link;
+				} else {
+					throw new Error("No payment link available");
+				}
+			}
 		} catch (e) {
 			console.error("Checkout failed:", e);
 			setError(e.message || "Checkout failed. Please try again.");
