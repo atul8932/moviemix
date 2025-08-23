@@ -14,8 +14,8 @@ export default async function handler(req, res) {
   }
 
   // Your actual Cashfree credentials
-  const CF_CLIENT_ID = "TEST10765407bb72805664932b47d38970456701";
-  const CF_CLIENT_SECRET = "cfsk_ma_test_a711b9dc500cdd7db5ddf39160cea690_edea5ed2";
+  const CF_CLIENT_ID = "1053196943b6b660de2611242596913501";
+  const CF_CLIENT_SECRET = "cfsk_ma_prod_ee63e2295e49e381e9efb7c1edcbfa91_89ac9641";
 
   if (!CF_CLIENT_ID || !CF_CLIENT_SECRET) {
     return res.status(500).json({ 
@@ -31,10 +31,10 @@ export default async function handler(req, res) {
 
   try {
     // Check order status from Cashfree
-    const response = await fetch(`https://sandbox.cashfree.com/pg/orders/${orderId}`, {
+    const response = await fetch(`https://api.cashfree.com/pg/orders/${orderId}`, {
       headers: {
         'Accept': 'application/json',
-        'x-api-version': '2023-08-01',
+        'x-api-version': '2022-01-01',
         'x-client-id': CF_CLIENT_ID,
         'x-client-secret': CF_CLIENT_SECRET,
       }
