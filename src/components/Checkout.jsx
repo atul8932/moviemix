@@ -41,7 +41,7 @@ const Checkout = () => {
 		
 		const dropPayload = {
 			orderId: orderId,
-			orderAmount: 5,
+			orderAmount: 6,
 			orderCurrency: "INR",
 			customerName: "Test Customer",
 			customerEmail: "test@example.com", 
