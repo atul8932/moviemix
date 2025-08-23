@@ -5,7 +5,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { db, auth } from "../firebase";
 import "./styles.css";
 import WhatsAppWidget from "./WhatsAppWidget";
-import { load } from "@cashfreepayments/cashfree-js";
+// import { load } from "@cashfreepayments/cashfree-js"; // Removed to avoid SDK issues
 
 const CF_CLIENT_ID = import.meta.env.VITE_CASHFREE_CLIENT_ID || "YOUR_CLIENT_ID";
 
@@ -21,7 +21,6 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const cashfreeRef = useRef(null);
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState("");
   const [paymentStatusInfo, setPaymentStatusInfo] = useState({ state: null, message: "" });
@@ -38,43 +37,8 @@ const Dashboard = () => {
     return () => unsub();
   }, [navigate]);
 
-  // Initialize Cashfree SDK
-  useEffect(() => {
-    let mounted = true;
-    const initCashfree = async () => {
-      try {
-        // Add a small delay to ensure DOM is ready
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        const cf = await load({ 
-          mode: "production"
-        });
-        
-        if (mounted) {
-          cashfreeRef.current = cf;
-          console.log("Cashfree SDK initialized successfully");
-        }
-      } catch (e) {
-        console.error("Cashfree init failed:", e);
-        // Retry once after a delay
-        setTimeout(async () => {
-          if (!mounted) return;
-          try {
-            const cf = await load({ mode: "production" });
-            if (mounted) {
-              cashfreeRef.current = cf;
-              console.log("Cashfree SDK initialized on retry");
-            }
-          } catch (retryError) {
-            console.error("Cashfree retry init failed:", retryError);
-          }
-        }, 1000);
-      }
-    };
-    
-    initCashfree();
-    return () => { mounted = false; };
-  }, []);
+  // Removed Cashfree SDK initialization to avoid PaymentJSInterface errors
+  // Using direct payment links instead
 
   // Fetch user's orders by email
   useEffect(() => {
@@ -161,9 +125,7 @@ const Dashboard = () => {
       try {
         setPaying(true);
 
-        if (!cashfreeRef.current) {
-          throw new Error("Payment SDK not ready. Please retry.");
-        }
+        // No SDK check needed - using direct payment links
 
         // Create payment order via our backend API
         const paymentRequest = {
@@ -198,25 +160,12 @@ const Dashboard = () => {
         
         localStorage.setItem("cfPendingOrder", JSON.stringify(orderData));
 
-        // Try using Cashfree SDK first, fallback to direct link
-        try {
-          if (cashfreeRef.current && paymentData.payment_session_id) {
-            const checkoutResult = await cashfreeRef.current.checkout({
-              paymentSessionId: paymentData.payment_session_id,
-              redirectTarget: "_self"
-            });
-            console.log("Checkout result:", checkoutResult);
-          } else {
-            throw new Error("SDK not available, using fallback");
-          }
-        } catch (sdkError) {
-          console.warn("SDK checkout failed, using direct link:", sdkError);
-          // Fallback to direct payment link
-          if (paymentData.payment_link) {
-            window.location.href = paymentData.payment_link;
-          } else {
-            throw new Error("No payment link available");
-          }
+        // Use direct payment link for reliable redirection
+        if (paymentData.payment_link) {
+          console.log("Redirecting to payment:", paymentData.payment_link);
+          window.location.href = paymentData.payment_link;
+        } else {
+          throw new Error("No payment link available");
         }
       } catch (err) {
         console.error("Error in request submit/payment", err?.response?.data || err?.message);

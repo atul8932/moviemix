@@ -1,45 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
-import { load } from "@cashfreepayments/cashfree-js";
+import React, { useState } from "react";
+// Removed Cashfree SDK to avoid PaymentJSInterface errors - using direct links
 
 const Checkout = () => {
-	const cashfreeRef = useRef(null);
-	const [isInitializing, setIsInitializing] = useState(true);
 	const [error, setError] = useState("");
 	const [paying, setPaying] = useState(false);
-
-	useEffect(() => {
-		let mounted = true;
-		const initCashfree = async () => {
-			try {
-				await new Promise(resolve => setTimeout(resolve, 100));
-				const cashfree = await load({ mode: "production" });
-				if (mounted) {
-					cashfreeRef.current = cashfree;
-					console.log("Cashfree SDK initialized successfully");
-				}
-			} catch (e) {
-				console.error("Cashfree init failed:", e);
-				if (mounted) {
-					setError("Failed to initialize payment SDK.");
-				}
-			} finally {
-				if (mounted) setIsInitializing(false);
-			}
-		};
-		
-		initCashfree();
-		return () => {
-			mounted = false;
-		};
-	}, []);
 
 	const handlePayNow = async () => {
 		setError("");
 		setPaying(true);
 		try {
-			if (!cashfreeRef.current) {
-				throw new Error("Payment SDK not ready. Please retry.");
-			}
+			// No SDK check needed - using direct payment links
 
 			// Create payment order via our backend API
 			const paymentRequest = {
@@ -63,24 +33,12 @@ const Checkout = () => {
 				throw new Error(paymentData.error || 'Failed to create payment order');
 			}
 
-			// Try using Cashfree SDK first, fallback to direct link
-			try {
-				if (cashfreeRef.current && paymentData.payment_session_id) {
-					await cashfreeRef.current.checkout({
-						paymentSessionId: paymentData.payment_session_id,
-						redirectTarget: "_self"
-					});
-				} else {
-					throw new Error("SDK not available, using fallback");
-				}
-			} catch (sdkError) {
-				console.warn("SDK checkout failed, using direct link:", sdkError);
-				// Fallback to direct payment link
-				if (paymentData.payment_link) {
-					window.location.href = paymentData.payment_link;
-				} else {
-					throw new Error("No payment link available");
-				}
+			// Use direct payment link for reliable redirection
+			if (paymentData.payment_link) {
+				console.log("Redirecting to payment:", paymentData.payment_link);
+				window.location.href = paymentData.payment_link;
+			} else {
+				throw new Error("No payment link available");
 			}
 		} catch (e) {
 			console.error("Checkout failed:", e);
@@ -99,11 +57,11 @@ const Checkout = () => {
 			)}
 			<button
 				onClick={handlePayNow}
-				disabled={isInitializing || paying}
+				disabled={paying}
 				className="btn btn-primary"
 				style={{ minWidth: 160 }}
 			>
-				{isInitializing ? "Initializing..." : paying ? "Processing..." : "Pay Now"}
+				{paying ? "Processing..." : "Pay Now"}
 			</button>
 		</div>
 	);
