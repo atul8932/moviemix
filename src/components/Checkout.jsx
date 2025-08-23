@@ -1,20 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
 import { load } from "@cashfreepayments/cashfree-js";
-
-const CLIENT_ID = import.meta.env.VITE_CASHFREE_CLIENT_ID || "YOUR_CLIENT_ID";
-const CLIENT_SECRET = import.meta.env.VITE_CASHFREE_CLIENT_SECRET || "YOUR_CLIENT_SECRET";
 
 const Checkout = () => {
 	const cashfreeRef = useRef(null);
 	const [isInitializing, setIsInitializing] = useState(true);
 	const [error, setError] = useState("");
+	const [paying, setPaying] = useState(false);
 
 	useEffect(() => {
 		let mounted = true;
 		(async () => {
 			try {
-				const cashfree = await load({ mode: "sandbox" });
+				const cashfree = await load({ mode: "production" });
 				if (mounted) {
 					cashfreeRef.current = cashfree;
 				}
@@ -29,89 +26,67 @@ const Checkout = () => {
 		};
 	}, []);
 
-	const getAccessToken = async () => {
-		// OAuth token for Cashfree PG APIs
-		const url = 'https://sandbox.cashfree.com/pg/orders'; // Orders API also accepts basic auth with client_id and client_secret in headers
-		return { url };
-	};
-
-	const createOrder = async () => {
-		// Use Cashfree Drop flow - no API calls needed
-		const orderId = `order_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-		
-		const dropPayload = {
-			orderId: orderId,
-			orderAmount: 6,
-			orderCurrency: "INR",
-			customerName: "Test Customer",
-			customerEmail: "test@example.com", 
-			customerPhone: "9060048489",
-			returnUrl: `${window.location.origin}`,
-			notifyUrl: `${window.location.origin}`,
-			paymentModes: "cc,dc,nb,paypal,upi",
-		};
-
-		// Create and submit form for Cashfree Drop Flow
-		const form = document.createElement('form');
-		form.method = 'POST';
-		form.action = 'https://test.cashfree.com/billpay/checkout/post/submit';
-		form.style.display = 'none';
-
-		// Add form fields
-		const fields = {
-			appId: CLIENT_ID,
-			orderId: dropPayload.orderId,
-			orderAmount: dropPayload.orderAmount,
-			orderCurrency: dropPayload.orderCurrency,
-			customerName: dropPayload.customerName,
-			customerEmail: dropPayload.customerEmail,
-			customerPhone: dropPayload.customerPhone,
-			returnUrl: dropPayload.returnUrl,
-			notifyUrl: dropPayload.notifyUrl,
-			paymentModes: dropPayload.paymentModes
-		};
-
-		Object.keys(fields).forEach(key => {
-			const input = document.createElement('input');
-			input.type = 'hidden';
-			input.name = key;
-			input.value = fields[key];
-			form.appendChild(input);
-		});
-
-		document.body.appendChild(form);
-		form.submit();
-		return null; // Will redirect, so return value not needed
-	};
-
 	const handlePayNow = async () => {
 		setError("");
+		setPaying(true);
 		try {
-			await createOrder(); // This will redirect to Cashfree
+			if (!cashfreeRef.current) {
+				throw new Error("Payment SDK not ready. Please retry.");
+			}
+
+			// Create payment order via our backend API
+			const paymentRequest = {
+				orderAmount: 5,
+				customerPhone: "9060048489",
+				customerEmail: "test@example.com",
+				returnUrl: `${window.location.origin}/checkout`
+			};
+
+			const response = await fetch('/api/create-payment', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(paymentRequest)
+			});
+
+			const paymentData = await response.json();
+
+			if (!paymentData.success) {
+				throw new Error(paymentData.error || 'Failed to create payment order');
+			}
+
+			// Use Cashfree SDK with payment session ID from backend
+			await cashfreeRef.current.checkout({
+				paymentSessionId: paymentData.payment_session_id,
+				redirectTarget: "_self",
+				appearance: {
+					primaryColor: "#6366f1"
+				}
+			});
 		} catch (e) {
 			console.error("Checkout failed:", e);
-			setError("Checkout failed. Please try again.");
+			setError(e.message || "Checkout failed. Please try again.");
+		} finally {
+			setPaying(false);
 		}
 	};
 
 	return (
 		<div style={{ maxWidth: 480, margin: "40px auto", padding: 16 }}>
-			<h2>Cashfree Checkout (Sandbox)</h2>
+			<h2>Cashfree Checkout</h2>
 			<p>Click below to open the checkout page in current tab.</p>
 			{error && (
 				<div style={{ color: "#b00020", marginBottom: 12 }}>{error}</div>
 			)}
 			<button
 				onClick={handlePayNow}
-				disabled={isInitializing}
+				disabled={isInitializing || paying}
 				className="btn btn-primary"
 				style={{ minWidth: 160 }}
 			>
-				{isInitializing ? "Initializing..." : "Pay Now"}
+				{isInitializing ? "Initializing..." : paying ? "Processing..." : "Pay Now"}
 			</button>
-			<div style={{ marginTop: 16, fontSize: 12, color: "#666" }}>
-				For testing only. Do not expose secrets in production.
-			</div>
 		</div>
 	);
 };

@@ -43,7 +43,7 @@ const Dashboard = () => {
     let mounted = true;
     (async () => {
       try {
-        const cf = await load({ mode: "sandbox" });
+        const cf = await load({ mode: "production" });
         if (mounted) cashfreeRef.current = cf;
       } catch (e) {
         console.error("Cashfree init failed", e);
