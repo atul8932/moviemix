@@ -10,7 +10,7 @@ import { load } from "@cashfreepayments/cashfree-js";
 
 const CF_CLIENT_ID = import.meta.env.VITE_CASHFREE_CLIENT_ID || "";
 const CF_CLIENT_SECRET = import.meta.env.VITE_CASHFREE_CLIENT_SECRET || "";
-const APP_BASE_URL = import.meta.env.VITE_DEV_URL || window.location.origin;
+const APP_BASE_URL = window.location.origin;
 const PG_BASE = import.meta.env.DEV ? "/pg" : "https://sandbox.cashfree.com/pg";
 
 const Dashboard = () => {
@@ -46,8 +46,14 @@ const Dashboard = () => {
     let mounted = true;
     (async () => {
       try {
+        console.log('=== INITIALIZING CASHFREE SDK ===');
+        console.log('Loading Cashfree SDK in sandbox mode...');
         const cf = await load({ mode: "sandbox" });
-        if (mounted) cashfreeRef.current = cf;
+        console.log('Cashfree SDK loaded successfully:', !!cf);
+        if (mounted) {
+          cashfreeRef.current = cf;
+          console.log('Cashfree SDK reference set');
+        }
       } catch (e) {
         console.error("Cashfree init failed", e);
       }
@@ -83,7 +89,7 @@ const Dashboard = () => {
             const resp = await fetch(`${PG_BASE}/orders/${pending.orderId}`, {
               headers: {
                 'Accept': 'application/json',
-                'x-api-version': '2023-08-01',
+                'x-api-version': '2022-01-01',
                 'x-client-id': CF_CLIENT_ID,
                 'x-client-secret': CF_CLIENT_SECRET,
               },
@@ -137,59 +143,89 @@ const Dashboard = () => {
 
   const handleRequestSubmit = async (e) => {
     e.preventDefault();
+    if (!mobile || !movie || paying) return;
+    
+    setPaying(true);
     setPayError("");
-    if (movie.trim() && mobile.trim() && user?.email) {
+    
+    try {
+      const response = await fetch('/api/create-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderAmount: 5, // Fixed amount for testing
+          customerPhone: mobile,
+          customerEmail: user?.email || `customer_${Date.now()}@example.com`,
+          returnUrl: `${APP_BASE_URL}/#/dashboard`
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Payment creation failed: ${errorData}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Payment creation failed');
+      }
+
+      const { order_id, payment_session_id } = data;
+      
+      if (!order_id || !payment_session_id) {
+        throw new Error('Invalid payment response from server');
+      }
+
+      // Store pending order details
+      localStorage.setItem("cfPendingOrder", JSON.stringify({ 
+        orderId: order_id, 
+        mobile, 
+        movie, 
+        language 
+      }));
+
+      // Launch Cashfree checkout
+      console.log('=== LAUNCHING CASHFREE CHECKOUT ===');
+      console.log('Payment Session ID:', payment_session_id);
+      console.log('Payment Link:', data.payment_link);
+      console.log('Cashfree SDK Ready:', !!cashfreeRef.current);
+      
+      // Try direct redirect first (more reliable)
+      if (data.payment_link) {
+        console.log('Using direct payment link redirect');
+        window.open(data.payment_link, '_self');
+        return;
+      }
+      
+      // Fallback to SDK checkout
+      if (!cashfreeRef.current) {
+        throw new Error("Payment SDK not ready and no payment link available");
+      }
+      
+      console.log('Falling back to SDK checkout...');
       try {
-        setPaying(true);
-
-        // No SDK check needed - using direct payment links
-
-        // Create payment order via our backend API
-        const orderPayload = {
-          order_amount: 5,
-          order_currency: "INR",
-          customer_details: {
-            customer_id: user?.uid || `cust_${Date.now()}`,
-            customer_phone: mobile,
-          },
-          order_meta: {
-            return_url: `${APP_BASE_URL}#/dashboard`,
-          },
-        };
-
-        const response = await fetch(`${PG_BASE}/orders`, {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'x-api-version': '2023-08-01',
-            'Content-Type': 'application/json',
-            'x-client-id': CF_CLIENT_ID,
-            'x-client-secret': CF_CLIENT_SECRET,
-          },
-          body: JSON.stringify(orderPayload)
-        });
-
-        const data = await response.json();
-        const orderId = data?.order_id;
-        const paymentSessionId = data?.payment_session_id || data?.order_token;
-        if (!orderId || !paymentSessionId) {
-          throw new Error('Failed to create payment order');
-        }
-
-        localStorage.setItem("cfPendingOrder", JSON.stringify({ orderId, mobile, movie, language }));
-
-        // Open Cashfree hosted checkout; it will return to order_meta.return_url
-        if (!cashfreeRef.current) throw new Error("Payment SDK not ready.");
         await cashfreeRef.current.checkout({
-          paymentSessionId,
+          paymentSessionId: payment_session_id,
           redirectTarget: "_self",
         });
-      } catch (err) {
-        console.error("Error in request submit/payment", err?.response?.data || err?.message);
-        setPayError(err?.response?.data?.message || err?.message || "Something went wrong");
-      } finally {
-        setPaying(false);
+        console.log('SDK checkout launched successfully');
+      } catch (checkoutError) {
+        console.error('SDK checkout also failed:', checkoutError);
+        throw new Error('Both checkout methods failed');
       }
+
+    } catch (err) {
+      console.error("=== PAYMENT ERROR ===");
+      console.error("Error type:", err.constructor.name);
+      console.error("Error message:", err.message);
+      console.error("Error stack:", err.stack);
+      console.error("Full error object:", err);
+      setPayError(err.message || "Something went wrong");
+    } finally {
+      setPaying(false);
     }
   };
 
