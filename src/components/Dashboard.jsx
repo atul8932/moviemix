@@ -31,11 +31,23 @@ const Dashboard = () => {
 
   // Auth guard and user state
   useEffect(() => {
+    console.log('=== AUTH USE EFFECT TRIGGERED ===');
+    console.log('Current user:', user);
+    console.log('Loading state:', loading);
+    
     const unsub = onAuthStateChanged(auth, (currentUser) => {
+      console.log('=== AUTH STATE CHANGED ===');
+      console.log('New user:', currentUser);
+      console.log('User email:', currentUser?.email);
+      
       setUser(currentUser);
       setLoading(false);
+      
       if (!currentUser) {
+        console.log('No user, navigating to home');
         navigate("/");
+      } else {
+        console.log('User authenticated, staying on dashboard');
       }
     });
     return () => unsub();
@@ -43,44 +55,98 @@ const Dashboard = () => {
 
   // Initialize Cashfree SDK (sandbox)
   useEffect(() => {
+    console.log('=== CASHFREE SDK USE EFFECT TRIGGERED ===');
+    console.log('Component mounted, starting SDK initialization...');
+    
     let mounted = true;
     (async () => {
       try {
         console.log('=== INITIALIZING CASHFREE SDK ===');
         console.log('Loading Cashfree SDK in sandbox mode...');
+        console.log('SDK load function:', typeof load);
+        
         const cf = await load({ mode: "sandbox" });
         console.log('Cashfree SDK loaded successfully:', !!cf);
+        console.log('SDK object:', cf);
+        
         if (mounted) {
           cashfreeRef.current = cf;
-          console.log('Cashfree SDK reference set');
+          console.log('Cashfree SDK reference set in ref');
+          console.log('Ref current value:', cashfreeRef.current);
+        } else {
+          console.log('Component unmounted, not setting SDK ref');
         }
       } catch (e) {
         console.error("Cashfree init failed", e);
+        console.error("Error details:", e.message);
+        console.error("Error stack:", e.stack);
       }
     })();
-    return () => { mounted = false; };
+    
+    return () => { 
+      console.log('=== CASHFREE SDK USE EFFECT CLEANUP ===');
+      mounted = false; 
+    };
   }, []);
 
   // Fetch user's orders by email
   useEffect(() => {
-    if (!user?.email) return;
+    console.log('=== ORDERS USE EFFECT TRIGGERED ===');
+    console.log('User email:', user?.email);
+    console.log('User object:', user);
+    
+    if (!user?.email) {
+      console.log('No user email, skipping orders fetch');
+      return;
+    }
+    
+    console.log('Setting up Firestore listener for email:', user.email);
     const q = query(collection(db, "movieRequests"), where("email", "==", user.email));
+    
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      console.log('=== FIRESTORE ORDERS UPDATE ===');
+      console.log('Query snapshot size:', querySnapshot.size);
+      console.log('Query snapshot empty:', querySnapshot.empty);
+      
       const ordersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      console.log('Processed orders data:', ordersData);
+      
       setOrders(ordersData);
+    }, (error) => {
+      console.error('Firestore orders listener error:', error);
     });
-    return () => unsubscribe();
+    
+    return () => {
+      console.log('=== ORDERS USE EFFECT CLEANUP ===');
+      console.log('Unsubscribing from Firestore listener');
+      unsubscribe();
+    };
   }, [user?.email]);
 
   // After returning from Cashfree, verify payment status
   useEffect(() => {
+    console.log('=== PAYMENT VERIFICATION USE EFFECT TRIGGERED ===');
+    console.log('User email:', user?.email);
+    console.log('User authenticated:', !!user);
+    
     const verifyAndCreateRequest = async () => {
       try {
+        console.log('=== CHECKING LOCAL STORAGE ===');
         const pendingStr = localStorage.getItem("cfPendingOrder");
-        if (!pendingStr || !user?.email) return;
+        console.log('Pending order from localStorage:', pendingStr);
+        
+        if (!pendingStr || !user?.email) {
+          console.log('No pending order or user email, skipping verification');
+          return;
+        }
         
         const pending = JSON.parse(pendingStr);
-        if (!pending?.orderId) return;
+        console.log('Parsed pending order:', pending);
+        
+        if (!pending?.orderId) {
+          console.log('No order ID in pending order, skipping verification');
+          return;
+        }
 
         let attempts = 0;
         const checkPaymentStatus = async () => {
