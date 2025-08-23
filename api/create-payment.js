@@ -13,9 +13,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Your actual Cashfree credentials
-  const CF_CLIENT_ID = "1053196943b6b660de2611242596913501";
-  const CF_CLIENT_SECRET = "cfsk_ma_prod_ee63e2295e49e381e9efb7c1edcbfa91_89ac9641";
+  // Get Cashfree credentials from environment variables
+  const CF_CLIENT_ID = process.env.CF_CLIENT_ID;
+  const CF_CLIENT_SECRET = process.env.CF_CLIENT_SECRET;
 
   if (!CF_CLIENT_ID || !CF_CLIENT_SECRET) {
     return res.status(500).json({ 
@@ -46,12 +46,12 @@ export default async function handler(req, res) {
         customer_email: customerEmail || `customer_${Date.now()}@example.com`,
       },
       order_meta: {
-        return_url: returnUrl || `${req.headers.origin || 'https://moviemix-git-devnew-tests-projects-300930eb.vercel.app'}/dashboard`,
+        return_url: returnUrl || `${req.headers.origin || process.env.FALLBACK_URL || 'https://moviemix-git-devnew-tests-projects-300930eb.vercel.app'}/dashboard`,
       },
     };
 
     // Call Cashfree API to create order
-    const response = await fetch('https://api.cashfree.com/pg/orders', {
+    const response = await fetch(process.env.CF_API_URL || 'https://api.cashfree.com/pg/orders', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
