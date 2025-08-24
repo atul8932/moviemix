@@ -148,57 +148,96 @@ const Dashboard = () => {
           return;
         }
 
-        let attempts = 0;
-        const checkPaymentStatus = async () => {
-          attempts += 1;
-          try {
-            const resp = await fetch(`${PG_BASE}/orders/${pending.orderId}`, {
-              headers: {
-                'Accept': 'application/json',
-                'x-api-version': '2022-01-01',
-                'x-client-id': CF_CLIENT_ID,
-                'x-client-secret': CF_CLIENT_SECRET,
-              },
-            });
-            const data = await resp.json();
-            const status = (data?.order_status || "").toUpperCase();
-            
-            if (status === "PAID") {
-              await addDoc(collection(db, "movieRequests"), {
-                mobile: pending.mobile,
-                movieName: pending.movie,
-                language: pending.language,
-                email: user.email,
-                createdAt: serverTimestamp(),
-                status: "pending",
-                paymentStatus: "success",
-                downloadLink: "",
-                cfOrderId: pending.orderId,
-                paymentMethod: data.payment_method || ""
-              });
-              localStorage.removeItem("cfPendingOrder");
-              setPaymentStatusInfo({ state: "paid", message: "Payment successful. Request created." });
-              return;
-            }
-            
-            if (status === "CANCELLED" || status === "EXPIRED" || status === "FAILED") {
-              localStorage.removeItem("cfPendingOrder");
-              setPaymentStatusInfo({ state: "failed", message: "Payment failed or expired. Please try again." });
-              return;
-            }
-            
-            // Payment is still pending, check again after a delay
-            setPaymentStatusInfo({ state: "pending", message: "Payment verification in progress..." });
-            if (attempts < 6) {
-              setTimeout(checkPaymentStatus, 5000);
-            }
-          } catch (e) {
-            console.error("Payment verification error:", e.message);
-            setPaymentStatusInfo({ state: "failed", message: "Could not verify payment. Please retry." });
-          }
-        };
+        console.log('=== STARTING PAYMENT VERIFICATION ===');
+        console.log('Pending order details:', pending);
+        console.log('User email:', user.email);
+        
+        // Call the API function with the same pattern as handleRequestSubmit
+        const response = await fetch('/api/verify-payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            orderId: pending.orderId,
+            userEmail: user.email,
+            orderDetails: pending
+          })
+        });
 
-        checkPaymentStatus();
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        console.log('Payment verification result:', result);
+        
+        // Handle the API response based on status
+        if (result.success && result.status === "PAID") {
+          console.log('=== PAYMENT VERIFIED - CREATING MOVIE REQUEST ===');
+          
+          // Create movie request in Firestore
+          try {
+            const movieRequest = {
+              mobile: pending.mobile,
+              movieName: pending.movie,
+              language: pending.language,
+              email: user.email,
+              createdAt: serverTimestamp(),
+              status: "pending",
+              paymentStatus: "success",
+              downloadLink: "",
+              cfOrderId: pending.orderId,
+              paymentMethod: result.data?.payment_method || ""
+            };
+            
+            console.log('Movie request data:', movieRequest);
+            
+            const docRef = await addDoc(collection(db, "movieRequests"), movieRequest);
+            console.log('Movie request created successfully:', docRef.id);
+            
+            localStorage.removeItem("cfPendingOrder");
+            setPaymentStatusInfo({ 
+              state: "success", 
+              message: "Payment verified! Movie request created." 
+            });
+            
+          } catch (firestoreError) {
+            console.error('=== FIRESTORE ERROR ===');
+            console.error('Error creating movie request:', firestoreError);
+            setPaymentStatusInfo({ 
+              state: "error", 
+              message: "Payment verified but failed to create movie request. Please contact support." 
+            });
+          }
+          
+        } else if (result.status === "FAILED") {
+          console.log('=== PAYMENT FAILED ===');
+          localStorage.removeItem("cfPendingOrder");
+          setPaymentStatusInfo({ 
+            state: "error", 
+            message: "Payment failed. Please try again." 
+          });
+          
+        } else if (result.status === "PENDING") {
+          console.log('=== PAYMENT PENDING ===');
+          setPaymentStatusInfo({ 
+            state: "pending", 
+            message: `Payment still pending... (Attempt ${result.attempts}/${result.maxAttempts})` 
+          });
+          
+          // Frontend will handle retries by calling this function again
+          if (result.attempts < result.maxAttempts) {
+            setTimeout(() => verifyAndCreateRequest(), 5000);
+          }
+          
+        } else {
+          console.log('=== UNKNOWN PAYMENT STATUS ===');
+          setPaymentStatusInfo({ 
+            state: "error", 
+            message: result.message || "Payment verification failed. Please contact support." 
+          });
+        }
       } catch (e) {
         console.error("Payment verification failed", e?.message);
       }
