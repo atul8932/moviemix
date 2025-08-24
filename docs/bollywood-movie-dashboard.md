@@ -31,9 +31,11 @@ src/
 │       └── Pagination/
 │           └── PaginationControls.jsx # Page navigation
 ├── data/
-│   └── genres.json                    # Static genre data (no API calls)
+│   └── genres.json                    # Static genre data (development)
 ├── utils/
 │   └── movieAPI.js                    # Frontend API service functions
+└── public/
+    └── genres.json                    # Static genre data (production)
 └── api/                               # API folder (Vercel)
     └── discover-movies.js             # Search and discover movies
 ```
@@ -47,7 +49,8 @@ src/
 // Fetch genres data instead of importing JSON directly
 const fetchGenresData = async () => {
   try {
-    const response = await fetch('/src/data/genres.json');
+    // Use public folder path that works in both development and production
+    const response = await fetch('/genres.json');
     if (!response.ok) {
       throw new Error('Failed to fetch genres data');
     }

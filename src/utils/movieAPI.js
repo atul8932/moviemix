@@ -1,8 +1,9 @@
-// api/movieAPI.js
+// src/utils/movieAPI.js
 // Fetch genres data instead of importing JSON directly
 const fetchGenresData = async () => {
   try {
-    const response = await fetch('/src/data/genres.json');
+    // Use public folder path that works in both development and production
+    const response = await fetch('/genres.json');
     if (!response.ok) {
       throw new Error('Failed to fetch genres data');
     }
