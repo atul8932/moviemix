@@ -1,13 +1,14 @@
 import React from 'react';
 
-const MovieCard = ({ movie }) => {
+const MovieCard = ({ movie, onCardClick }) => {
   const {
     id,
     title,
     poster_path,
     release_date,
     vote_average,
-    overview
+    overview,
+    genre_names
   } = movie;
 
   const posterUrl = poster_path 
@@ -28,8 +29,14 @@ const MovieCard = ({ movie }) => {
     return text.substring(0, maxLength).trim() + '...';
   };
 
+  const handleCardClick = () => {
+    if (onCardClick) {
+      onCardClick(movie);
+    }
+  };
+
   return (
-    <div className="movie-card" data-movie-id={id}>
+    <div className="movie-card" data-movie-id={id} onClick={handleCardClick}>
       <div className="movie-poster">
         <img 
           src={posterUrl} 
@@ -46,6 +53,15 @@ const MovieCard = ({ movie }) => {
         <p className="movie-release-date">
           {formatDate(release_date)}
         </p>
+        {genre_names && genre_names.length > 0 && (
+          <div className="movie-genres">
+            {genre_names.map((genre, index) => (
+              <span key={index} className="genre-tag">
+                {genre}
+              </span>
+            ))}
+          </div>
+        )}
         <p className="movie-overview">
           {truncateOverview(overview)}
         </p>

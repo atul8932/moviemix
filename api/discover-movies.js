@@ -42,12 +42,17 @@ export default async function handler(req, res) {
     console.log('- with_genres:', with_genres);
     console.log('- query:', query);
 
+    // Get today's date in YYYY-MM-DD format for TMDB API
+    const today = new Date().toISOString().split('T')[0];
+    console.log('- Today\'s date (filter):', today);
+
     // Build query parameters (without api_key)
     const queryParams = new URLSearchParams({
       language: 'en-US',
       include_adult: 'false',
       page: page || '1',
-      sort_by: sort_by || 'popularity.desc'
+      sort_by: sort_by || 'popularity.desc',
+      'primary_release_date.lte': today // Only show movies released before today
     });
 
     if (with_genres) {
@@ -63,6 +68,7 @@ export default async function handler(req, res) {
     console.log('=== TMDB API CALL ===');
     console.log('Final URL:', finalUrl);
     console.log('Query Parameters:', queryParams.toString());
+    console.log('Release Date Filter:', `primary_release_date.lte=${today}`);
     console.log('Headers being sent:', {
       'Authorization': `Bearer ${TMDB_BEARER_TOKEN.substring(0, 20)}...`,
       'accept': 'application/json'
@@ -98,6 +104,7 @@ export default async function handler(req, res) {
     console.log('Total Pages:', data.total_pages);
     console.log('Current Page:', data.page);
     console.log('Movies Count:', data.results ? data.results.length : 'No results array');
+    console.log('Release Date Filter Applied:', `Only movies released before ${today}`);
     
     if (data.results && data.results.length > 0) {
       console.log('First Movie Sample:', {
@@ -111,7 +118,7 @@ export default async function handler(req, res) {
     console.log('=== SENDING RESPONSE TO FRONTEND ===');
     return res.status(200).json(data);
   } catch (error) {
-    console.error('=== FUNCTION ERROR ===');
+    console.log('=== FUNCTION ERROR ===');
     console.error('Error type:', error.constructor.name);
     console.error('Error message:', error.message);
     console.error('Error stack:', error.stack);

@@ -14,25 +14,55 @@ const fetchGenresData = async () => {
   }
 };
 
+// Convert genre IDs to genre names
+const getGenreNames = (genreIds, genresData) => {
+  if (!genreIds || !Array.isArray(genreIds) || !genresData || !genresData.genres) {
+    return [];
+  }
+  
+  return genreIds.map(id => {
+    const genre = genresData.genres.find(g => g.id === id);
+    return genre ? genre.name : `Unknown Genre (${id})`;
+  });
+};
+
 export const movieAPI = {
-  // Get genres from static JSON (no API call needed)
   async getGenres() {
     return await fetchGenresData();
   },
 
-  // Discover movies with filters via serverless function
-  async discoverMovies(params) {
-    const queryParams = new URLSearchParams({
-      page: params.page || '1',
-      sort_by: params.sortBy || 'popularity.desc',
-      ...(params.genres && { with_genres: params.genres.join(',') }),
-      ...(params.keyword && { query: params.keyword })
-    });
+  async discoverMovies(filters = {}) {
+    try {
+      const queryParams = new URLSearchParams();
+      
+      if (filters.page) queryParams.append('page', filters.page);
+      if (filters.sort_by) queryParams.append('sort_by', filters.sort_by);
+      if (filters.with_genres) queryParams.append('with_genres', filters.with_genres);
+      if (filters.query) queryParams.append('query', filters.query);
 
-    const response = await fetch(`/api/discover-movies?${queryParams}`);
-    if (!response.ok) {
-      throw new Error('Failed to discover movies');
+      const response = await fetch(`/api/discover-movies?${queryParams}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch movies');
+      }
+      
+      const data = await response.json();
+      
+      // If we have movies and genres data, convert genre IDs to names
+      if (data.results && data.results.length > 0) {
+        const genresData = await this.getGenres();
+        data.results = data.results.map(movie => ({
+          ...movie,
+          genre_names: getGenreNames(movie.genre_ids, genresData)
+        }));
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Error discovering movies:', error);
+      throw error;
     }
-    return response.json();
-  }
+  },
+
+  // Helper function to convert genre IDs to names (can be used independently)
+  getGenreNames
 }; 

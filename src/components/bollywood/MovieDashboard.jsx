@@ -1,27 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { movieAPI } from '../../utils/movieAPI';
 import SearchBar from './SearchBar/SearchBar';
-import MovieGrid from './MovieGrid/MovieGrid';
 import SortingControls from './SortingControls/SortDropdown';
+import MovieGrid from './MovieGrid/MovieGrid';
 import PaginationControls from './Pagination/PaginationControls';
+import MovieModal from './MovieGrid/MovieModal';
+import { movieAPI } from '../../utils/movieAPI';
 import './MovieDashboard.css';
 
 const MovieDashboard = () => {
-  // State management
   const [movies, setMovies] = useState([]);
   const [genres, setGenres] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
-  // Search and filter state
-  const [selectedGenres, setSelectedGenres] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [selectedGenres, setSelectedGenres] = useState([]);
   const [sortBy, setSortBy] = useState('popularity.desc');
-  
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalResults, setTotalResults] = useState(0);
+  
+  // Modal state
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch genres on component mount
   useEffect(() => {
@@ -50,9 +50,9 @@ const MovieDashboard = () => {
     
     try {
       const data = await movieAPI.discoverMovies({
-        genres: selectedGenres,
-        keyword: searchKeyword,
-        sortBy,
+        with_genres: selectedGenres.join(','),
+        query: searchKeyword,
+        sort_by: sortBy,
         page: currentPage
       });
       
@@ -80,6 +80,16 @@ const MovieDashboard = () => {
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
     window.scrollTo(0, 0); // Scroll to top
+  };
+
+  const handleCardClick = (movie) => {
+    setSelectedMovie(movie);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedMovie(null);
   };
 
   return (
@@ -110,7 +120,10 @@ const MovieDashboard = () => {
       
       {movies.length > 0 && (
         <>
-          <MovieGrid movies={movies} />
+          <MovieGrid 
+            movies={movies} 
+            onCardClick={handleCardClick}
+          />
           
           <PaginationControls
             currentPage={currentPage}
@@ -119,6 +132,12 @@ const MovieDashboard = () => {
           />
         </>
       )}
+
+      <MovieModal
+        movie={selectedMovie}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 };

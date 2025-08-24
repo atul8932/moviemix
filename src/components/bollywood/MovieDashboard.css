@@ -222,7 +222,31 @@
 .movie-release-date {
   font-size: 14px;
   color: #6c757d;
+  margin: 0 0 0.5rem 0;
+}
+
+.movie-genres {
   margin: 0 0 1rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.genre-tag {
+  background: #e9ecef;
+  color: #495057;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #dee2e6;
+  transition: all 0.2s ease;
+}
+
+.genre-tag:hover {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
 }
 
 .movie-overview {
@@ -302,42 +326,228 @@
   margin: 2rem 0;
 }
 
-/* Responsive Design */
+/* Movie Modal Styles */
+.movie-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.movie-modal {
+  background: white;
+  border-radius: 16px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.movie-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e9ecef;
+  background: #f8f9fa;
+}
+
+.movie-modal-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #212529;
+}
+
+.movie-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.movie-modal-close:hover {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.movie-modal-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.movie-modal-poster {
+  flex: 0 0 300px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.movie-modal-poster img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.movie-modal-rating {
+  margin-top: 16px;
+  text-align: center;
+  background: #f8f9fa;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.movie-modal-rating .rating-count {
+  display: block;
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 4px;
+}
+
+.movie-modal-details {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.movie-modal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.info-section h3 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #212529;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 8px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #495057;
+  min-width: 120px;
+}
+
+.info-value {
+  color: #212529;
+  text-align: right;
+  flex: 1;
+  margin-left: 16px;
+}
+
+.modal-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.modal-genre-tag {
+  background: #007bff;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.modal-genre-tag:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
+}
+
+.movie-overview-full {
+  line-height: 1.6;
+  color: #495057;
+  margin: 0;
+  text-align: justify;
+}
+
+/* Responsive Modal */
 @media (max-width: 768px) {
-  .movie-dashboard {
-    padding: 1rem;
+  .movie-modal {
+    max-width: 95vw;
+    max-height: 95vh;
   }
   
-  .search-inputs {
+  .movie-modal-content {
     flex-direction: column;
   }
   
-  .keyword-input {
-    min-width: auto;
+  .movie-modal-poster {
+    flex: none;
+    padding: 16px 24px 0 24px;
   }
   
-  .movie-grid {
+  .movie-modal-poster img {
+    max-width: 200px;
+  }
+  
+  .movie-modal-details {
+    padding: 16px 24px 24px 24px;
+  }
+  
+  .info-grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
   }
   
-  .dashboard-controls {
+  .info-item {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
+    gap: 4px;
   }
   
-  .pagination-controls {
-    flex-direction: column;
-    gap: 0.5rem;
+  .info-value {
+    text-align: left;
+    margin-left: 0;
   }
 }
 
-@media (max-width: 480px) {
-  .search-bar {
-    padding: 1.5rem;
-  }
-  
-  .movie-card {
-    margin: 0 0.5rem;
-  }
+/* No Movies Message */
+.no-movies {
+  text-align: center;
+  padding: 3rem;
+  color: #6c757d;
+  font-size: 18px;
 } 

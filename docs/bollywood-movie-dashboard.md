@@ -25,7 +25,8 @@ src/
 │       │   └── GenreDropdown.jsx      # Genre selection dropdown
 │       ├── MovieGrid/
 │       │   ├── MovieGrid.jsx          # Movie list container
-│       │   └── MovieCard.jsx          # Individual movie card
+│       │   ├── MovieCard.jsx          # Individual movie card
+│       │   └── MovieModal.jsx         # Modal for full movie data
 │       ├── SortingControls/
 │       │   └── SortDropdown.jsx       # Sorting options dropdown
 │       └── Pagination/
@@ -292,6 +293,10 @@ export default MovieDashboard;
 
 #### **3.4.1 Discover Movies API (`api/discover-movies.js`)**
 
+**Release Date Filtering**: The API automatically filters movies to only show those released before today's date using `primary_release_date.lte` parameter. This ensures users only see movies that have actually been released.
+
+**Genre ID to Name Conversion**: The frontend automatically converts TMDB genre IDs to human-readable genre names using the local genres.json file, providing a better user experience.
+
 ```javascript
 // api/discover-movies.js
 export default async function handler(req, res) {
@@ -318,12 +323,16 @@ export default async function handler(req, res) {
 
     const { page, sort_by, with_genres, query } = req.query;
 
+    // Get today's date in YYYY-MM-DD format for TMDB API
+    const today = new Date().toISOString().split('T')[0];
+    
     // Build query parameters (without api_key)
     const queryParams = new URLSearchParams({
       language: 'en-US',
       include_adult: 'false',
       page: page || '1',
-      sort_by: sort_by || 'popularity.desc'
+      sort_by: sort_by || 'popularity.desc',
+      'primary_release_date.lte': today // Only show movies released before today
     });
 
     if (with_genres) {
@@ -429,6 +438,10 @@ export default MovieGrid;
 
 ### 3.7 Movie Card Component (`MovieGrid/MovieCard.jsx`)
 
+**Genre Display**: The MovieCard component now displays genre names instead of IDs. It receives `genre_names` from the API response, which contains human-readable genre names converted from TMDB genre IDs.
+
+**Click Functionality**: Users can click on any movie card to view the complete movie data in JSON format through a modal popup.
+
 ```javascript
 import React from 'react';
 
@@ -439,7 +452,8 @@ const MovieCard = ({ movie }) => {
     poster_path,
     release_date,
     vote_average,
-    overview
+    overview,
+    genre_names
   } = movie;
 
   const posterUrl = poster_path 
@@ -478,6 +492,15 @@ const MovieCard = ({ movie }) => {
         <p className="movie-release-date">
           {formatDate(release_date)}
         </p>
+        {genre_names && genre_names.length > 0 && (
+          <div className="movie-genres">
+            {genre_names.map((genre, index) => (
+              <span key={index} className="genre-tag">
+                {genre}
+              </span>
+            ))}
+          </div>
+        )}
         <p className="movie-overview">
           {truncateOverview(overview)}
         </p>
@@ -489,7 +512,100 @@ const MovieCard = ({ movie }) => {
 export default MovieCard;
 ```
 
-### 3.8 Sorting Controls (`SortingControls/SortDropdown.jsx`)
+### 3.8 Movie Modal Component (`MovieGrid/MovieModal.jsx`)
+
+**User-Friendly Movie Display**: The MovieModal component displays complete movie information in a clean, readable format when a movie card is clicked. It includes:
+
+- Movie poster and rating in the header
+- Organized sections for Movie Information, Genres, Overview, and Additional Details
+- Responsive design for mobile and desktop
+- Click outside to close functionality
+
+```javascript
+import React from 'react';
+
+const MovieModal = ({ movie, isOpen, onClose }) => {
+  if (!isOpen || !movie) return null;
+
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  return (
+    <div className="movie-modal-overlay" onClick={handleBackdropClick}>
+      <div className="movie-modal">
+        <div className="movie-modal-header">
+          <h2 className="movie-modal-title">{movie.title}</h2>
+          <button className="movie-modal-close" onClick={onClose}>
+            ✕
+          </button>
+        </div>
+        
+        <div className="movie-modal-content">
+          <div className="movie-modal-poster">
+            <img src={movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : '/placeholder-poster.jpg'} alt={`${movie.title} poster`} />
+            {movie.vote_average && (
+              <div className="movie-modal-rating">
+                ⭐ {movie.vote_average.toFixed(1)}
+                <span className="rating-count">({movie.vote_count} votes)</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="movie-modal-details">
+            <div className="movie-modal-info">
+              {/* Basic Info */}
+              <div className="info-section">
+                <h3>Movie Information</h3>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <span className="info-label">Title:</span>
+                    <span className="info-value">{movie.title}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Release Date:</span>
+                    <span className="info-value">{formatDate(movie.release_date)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Genres */}
+              {movie.genre_names && movie.genre_names.length > 0 && (
+                <div className="info-section">
+                  <h3>Genres</h3>
+                  <div className="modal-genres">
+                    {movie.genre_names.map((genre, index) => (
+                      <span key={index} className="modal-genre-tag">
+                        {genre}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Overview */}
+              {movie.overview && (
+                <div className="info-section">
+                  <h3>Overview</h3>
+                  <p className="movie-overview-full">{movie.overview}</p>
+                </div>
+              )}
+
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MovieModal;
+```
+
+### 3.9 Sorting Controls (`SortingControls/SortDropdown.jsx`)
 
 ```javascript
 import React from 'react';
