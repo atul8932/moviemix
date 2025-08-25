@@ -1,14 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { collection, addDoc, serverTimestamp, query, where, onSnapshot } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { db, auth } from "../firebase";
 import "./styles.css";
 import WhatsAppWidget from "./WhatsAppWidget";
-// import { load } from "@cashfreepayments/cashfree-js"; // Removed to avoid SDK issues
-
-const CF_CLIENT_ID = import.meta.env.VITE_CASHFREE_CLIENT_ID || "YOUR_CLIENT_ID";
-
 
 const Dashboard = () => {
   const [mobile, setMobile] = useState("");
@@ -21,9 +17,6 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const [paying, setPaying] = useState(false);
-  const [payError, setPayError] = useState("");
-  const [paymentStatusInfo, setPaymentStatusInfo] = useState({ state: null, message: "" });
 
   // Auth guard and user state
   useEffect(() => {
@@ -37,9 +30,6 @@ const Dashboard = () => {
     return () => unsub();
   }, [navigate]);
 
-  // Removed Cashfree SDK initialization to avoid PaymentJSInterface errors
-  // Using direct payment links instead
-
   // Fetch user's orders by email
   useEffect(() => {
     if (!user?.email) return;
@@ -51,127 +41,33 @@ const Dashboard = () => {
     return () => unsubscribe();
   }, [user?.email]);
 
-  // After returning from Cashfree, verify payment status
-  useEffect(() => {
-    const verifyAndCreateRequest = async () => {
-      try {
-        const pendingStr = localStorage.getItem("cfPendingOrder");
-        if (!pendingStr || !user?.email) return;
-        
-        const pending = JSON.parse(pendingStr);
-        if (!pending?.orderId) return;
-
-        let attempts = 0;
-        const checkPaymentStatus = async () => {
-          attempts += 1;
-          try {
-            const response = await fetch(`/api/verify-payment?orderId=${pending.orderId}`);
-            const data = await response.json();
-
-            if (!data.success) {
-              throw new Error(data.error);
-            }
-
-            const status = (data.order_status || "").toUpperCase();
-            
-            if (status === "PAID") {
-              await addDoc(collection(db, "movieRequests"), {
-                mobile: pending.mobile,
-                movieName: pending.movie,
-                language: pending.language,
-                email: user.email,
-                createdAt: serverTimestamp(),
-                status: "pending",
-                paymentStatus: "success",
-                downloadLink: "",
-                cfOrderId: pending.orderId,
-                paymentMethod: data.payment_method || ""
-              });
-              localStorage.removeItem("cfPendingOrder");
-              setPaymentStatusInfo({ state: "paid", message: "Payment successful. Request created." });
-              return;
-            }
-            
-            if (status === "CANCELLED" || status === "EXPIRED" || status === "FAILED") {
-              localStorage.removeItem("cfPendingOrder");
-              setPaymentStatusInfo({ state: "failed", message: "Payment failed or expired. Please try again." });
-              return;
-            }
-            
-            // Payment is still pending, check again after a delay
-            setPaymentStatusInfo({ state: "pending", message: "Payment verification in progress..." });
-            if (attempts < 6) {
-              setTimeout(checkPaymentStatus, 5000);
-            }
-          } catch (e) {
-            console.error("Payment verification error:", e.message);
-            setPaymentStatusInfo({ state: "failed", message: "Could not verify payment. Please retry." });
-          }
-        };
-
-        checkPaymentStatus();
-      } catch (e) {
-        console.error("Payment verification failed", e?.message);
-      }
-    };
-    
-    verifyAndCreateRequest();
-  }, [user?.email]);
-
   const handleRequestSubmit = async (e) => {
     e.preventDefault();
-    setPayError("");
     if (movie.trim() && mobile.trim() && user?.email) {
       try {
-        setPaying(true);
-
-        // No SDK check needed - using direct payment links
-
-        // Create payment order via our backend API
-        const paymentRequest = {
-          orderAmount: 5,
-          customerPhone: mobile,
-          customerEmail: user.email,
-          returnUrl: `${window.location.origin}/#/dashboard`
-        };
-
-        const response = await fetch('/api/create-payment', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(paymentRequest)
+        const docRef = await addDoc(collection(db, "movieRequests"), {
+          mobile,
+          movieName: movie,
+          language,
+          email: user.email,
+          createdAt: serverTimestamp(),
+          status: "pending",
+          paymentStatus: "pending",
+          downloadLink: "",
         });
-
-        const paymentData = await response.json();
-
-        if (!paymentData.success) {
-          throw new Error(paymentData.error || 'Failed to create payment order');
-        }
-
-        // Store order details for verification later
-        const orderData = {
-          orderId: paymentData.order_id,
+        // Redirect to Razorpay Payment Page with context
+        const paymentUrl = "https://pages.razorpay.com/pl_R1CkGhUdhWGx7i/view";
+        const params = new URLSearchParams({
+          ref: docRef.id,
+          email: user.email,
           mobile,
           movie,
           language,
-          amount: 5
-        };
-        
-        localStorage.setItem("cfPendingOrder", JSON.stringify(orderData));
-
-        // Use direct payment link for reliable redirection
-        if (paymentData.payment_link) {
-          console.log("Redirecting to payment:", paymentData.payment_link);
-          window.location.href = paymentData.payment_link;
-        } else {
-          throw new Error("No payment link available");
-        }
+          redirect: `${window.location.origin}/#/dashboard`
+        });
+        window.location.href = `${paymentUrl}?${params.toString()}`;
       } catch (err) {
-        console.error("Error in request submit/payment", err?.response?.data || err?.message);
-        setPayError(err?.response?.data?.message || err?.message || "Something went wrong");
-      } finally {
-        setPaying(false);
+        console.error("Error saving movie request:", err);
       }
     }
   };
@@ -314,14 +210,8 @@ const Dashboard = () => {
                   </select>
                 </div>
               </div>
-              {payError && <div className="error-message" style={{ marginBottom: 8 }}>{payError}</div>}
-              {paymentStatusInfo?.message && (
-                <div className="info-message" style={{ marginBottom: 8 }}>
-                  {paymentStatusInfo.message}
-                </div>
-              )}
-              <button type="submit" className="btn btn-primary" disabled={paying}>
-                {paying ? "Processing..." : "Request Movie"}
+              <button type="submit" className="btn btn-primary">
+                Request Movie
               </button>
             </form>
           </div>
