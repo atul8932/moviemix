@@ -260,7 +260,7 @@ const Dashboard = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          orderAmount: 5, // Fixed amount for testing
+          orderAmount: 6, // Fixed amount for testing
           customerPhone: mobile,
           customerEmail: user?.email || `customer_${Date.now()}@example.com`,
           returnUrl: `${APP_BASE_URL}/#/dashboard`
