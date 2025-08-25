@@ -1135,3 +1135,26 @@ h1, h2, h3, h4, h5, h6 {
 .wa-drawer-body {
   padding: 16px;
 }
+
+/* Small Loading Spinner for Auth Button */
+.loading-spinner-small {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  vertical-align: middle;
+}
+
+/* Auth Error Message */
+.error-message {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  font-size: 14px;
+}
