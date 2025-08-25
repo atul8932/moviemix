@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect,useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { collection, addDoc, serverTimestamp, query, where, onSnapshot } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
@@ -12,6 +12,7 @@ const CF_CLIENT_ID = import.meta.env.VITE_CASHFREE_CLIENT_ID || "";
 const CF_CLIENT_SECRET = import.meta.env.VITE_CASHFREE_CLIENT_SECRET || "";
 const APP_BASE_URL = window.location.origin;
 const PG_BASE = import.meta.env.DEV ? "/pg" : "https://sandbox.cashfree.com/pg";
+
 
 const Dashboard = () => {
   const [mobile, setMobile] = useState("");
@@ -28,6 +29,7 @@ const Dashboard = () => {
   const [payError, setPayError] = useState("");
   const [paymentStatusInfo, setPaymentStatusInfo] = useState({ state: null, message: "" });
   const cashfreeRef = useRef(null);
+
 
   // Auth guard and user state
   useEffect(() => {
@@ -52,6 +54,7 @@ const Dashboard = () => {
     });
     return () => unsub();
   }, [navigate]);
+
 
   // Initialize Cashfree SDK (sandbox)
   useEffect(() => {
@@ -88,6 +91,7 @@ const Dashboard = () => {
       mounted = false; 
     };
   }, []);
+
 
   // Fetch user's orders by email
   useEffect(() => {
@@ -270,6 +274,7 @@ const Dashboard = () => {
       if (!response.ok) {
         const errorData = await response.text();
         throw new Error(`Payment creation failed: ${errorData}`);
+
       }
 
       const data = await response.json();
@@ -472,14 +477,8 @@ const Dashboard = () => {
                   </select>
                 </div>
               </div>
-              {payError && <div className="error-message" style={{ marginBottom: 8 }}>{payError}</div>}
-              {paymentStatusInfo?.message && (
-                <div className="info-message" style={{ marginBottom: 8 }}>
-                  {paymentStatusInfo.message}
-                </div>
-              )}
-              <button type="submit" className="btn btn-primary" disabled={paying}>
-                {paying ? "Processing..." : "Request Movie"}
+              <button type="submit" className="btn btn-primary">
+                Request Movie
               </button>
             </form>
           </div>
