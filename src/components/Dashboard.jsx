@@ -6,9 +6,12 @@ import { db, auth } from "../firebase";
 import "./styles.css";
 import WhatsAppWidget from "./WhatsAppWidget";
 // import { load } from "@cashfreepayments/cashfree-js"; // Removed to avoid SDK issues
+import { load } from "@cashfreepayments/cashfree-js";
 
-const CF_CLIENT_ID = import.meta.env.VITE_CASHFREE_CLIENT_ID || "YOUR_CLIENT_ID";
-
+const CF_CLIENT_ID = import.meta.env.VITE_CASHFREE_CLIENT_ID || "";
+const CF_CLIENT_SECRET = import.meta.env.VITE_CASHFREE_CLIENT_SECRET || "";
+const APP_BASE_URL = window.location.origin;
+const PG_BASE = import.meta.env.DEV ? "/pg" : "https://sandbox.cashfree.com/pg";
 
 const Dashboard = () => {
   const [mobile, setMobile] = useState("");
@@ -24,92 +27,217 @@ const Dashboard = () => {
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState("");
   const [paymentStatusInfo, setPaymentStatusInfo] = useState({ state: null, message: "" });
+  const cashfreeRef = useRef(null);
 
   // Auth guard and user state
   useEffect(() => {
+    console.log('=== AUTH USE EFFECT TRIGGERED ===');
+    console.log('Current user:', user);
+    console.log('Loading state:', loading);
+    
     const unsub = onAuthStateChanged(auth, (currentUser) => {
+      console.log('=== AUTH STATE CHANGED ===');
+      console.log('New user:', currentUser);
+      console.log('User email:', currentUser?.email);
+      
       setUser(currentUser);
       setLoading(false);
+      
       if (!currentUser) {
+        console.log('No user, navigating to home');
         navigate("/");
+      } else {
+        console.log('User authenticated, staying on dashboard');
       }
     });
     return () => unsub();
   }, [navigate]);
 
-  // Removed Cashfree SDK initialization to avoid PaymentJSInterface errors
-  // Using direct payment links instead
+  // Initialize Cashfree SDK (sandbox)
+  useEffect(() => {
+    console.log('=== CASHFREE SDK USE EFFECT TRIGGERED ===');
+    console.log('Component mounted, starting SDK initialization...');
+    
+    let mounted = true;
+    (async () => {
+      try {
+        console.log('=== INITIALIZING CASHFREE SDK ===');
+        console.log('Loading Cashfree SDK in sandbox mode...');
+        console.log('SDK load function:', typeof load);
+        
+        const cf = await load({ mode: "sandbox" });
+        console.log('Cashfree SDK loaded successfully:', !!cf);
+        console.log('SDK object:', cf);
+        
+        if (mounted) {
+          cashfreeRef.current = cf;
+          console.log('Cashfree SDK reference set in ref');
+          console.log('Ref current value:', cashfreeRef.current);
+        } else {
+          console.log('Component unmounted, not setting SDK ref');
+        }
+      } catch (e) {
+        console.error("Cashfree init failed", e);
+        console.error("Error details:", e.message);
+        console.error("Error stack:", e.stack);
+      }
+    })();
+    
+    return () => { 
+      console.log('=== CASHFREE SDK USE EFFECT CLEANUP ===');
+      mounted = false; 
+    };
+  }, []);
 
   // Fetch user's orders by email
   useEffect(() => {
-    if (!user?.email) return;
+    console.log('=== ORDERS USE EFFECT TRIGGERED ===');
+    console.log('User email:', user?.email);
+    console.log('User object:', user);
+    
+    if (!user?.email) {
+      console.log('No user email, skipping orders fetch');
+      return;
+    }
+    
+    console.log('Setting up Firestore listener for email:', user.email);
     const q = query(collection(db, "movieRequests"), where("email", "==", user.email));
+    
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      console.log('=== FIRESTORE ORDERS UPDATE ===');
+      console.log('Query snapshot size:', querySnapshot.size);
+      console.log('Query snapshot empty:', querySnapshot.empty);
+      
       const ordersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      console.log('Processed orders data:', ordersData);
+      
       setOrders(ordersData);
+    }, (error) => {
+      console.error('Firestore orders listener error:', error);
     });
-    return () => unsubscribe();
+    
+    return () => {
+      console.log('=== ORDERS USE EFFECT CLEANUP ===');
+      console.log('Unsubscribing from Firestore listener');
+      unsubscribe();
+    };
   }, [user?.email]);
 
   // After returning from Cashfree, verify payment status
   useEffect(() => {
+    console.log('=== PAYMENT VERIFICATION USE EFFECT TRIGGERED ===');
+    console.log('User email:', user?.email);
+    console.log('User authenticated:', !!user);
+    
     const verifyAndCreateRequest = async () => {
       try {
+        console.log('=== CHECKING LOCAL STORAGE ===');
         const pendingStr = localStorage.getItem("cfPendingOrder");
-        if (!pendingStr || !user?.email) return;
+        console.log('Pending order from localStorage:', pendingStr);
+        
+        if (!pendingStr || !user?.email) {
+          console.log('No pending order or user email, skipping verification');
+          return;
+        }
         
         const pending = JSON.parse(pendingStr);
-        if (!pending?.orderId) return;
+        console.log('Parsed pending order:', pending);
+        
+        if (!pending?.orderId) {
+          console.log('No order ID in pending order, skipping verification');
+          return;
+        }
 
-        let attempts = 0;
-        const checkPaymentStatus = async () => {
-          attempts += 1;
+        console.log('=== STARTING PAYMENT VERIFICATION ===');
+        console.log('Pending order details:', pending);
+        console.log('User email:', user.email);
+        
+        // Call the API function with the same pattern as handleRequestSubmit
+        const response = await fetch('/api/verify-payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            orderId: pending.orderId,
+            userEmail: user.email,
+            orderDetails: pending
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        console.log('Payment verification result:', result);
+        
+        // Handle the API response based on status
+        if (result.success && result.status === "PAID") {
+          console.log('=== PAYMENT VERIFIED - CREATING MOVIE REQUEST ===');
+          
+          // Create movie request in Firestore
           try {
-            const response = await fetch(`/api/verify-payment?orderId=${pending.orderId}`);
-            const data = await response.json();
-
-            if (!data.success) {
-              throw new Error(data.error);
-            }
-
-            const status = (data.order_status || "").toUpperCase();
+            const movieRequest = {
+              mobile: pending.mobile,
+              movieName: pending.movie,
+              language: pending.language,
+              email: user.email,
+              createdAt: serverTimestamp(),
+              status: "pending",
+              paymentStatus: "success",
+              downloadLink: "",
+              cfOrderId: pending.orderId,
+              paymentMethod: result.data?.payment_method || ""
+            };
             
-            if (status === "PAID") {
-              await addDoc(collection(db, "movieRequests"), {
-                mobile: pending.mobile,
-                movieName: pending.movie,
-                language: pending.language,
-                email: user.email,
-                createdAt: serverTimestamp(),
-                status: "pending",
-                paymentStatus: "success",
-                downloadLink: "",
-                cfOrderId: pending.orderId,
-                paymentMethod: data.payment_method || ""
-              });
-              localStorage.removeItem("cfPendingOrder");
-              setPaymentStatusInfo({ state: "paid", message: "Payment successful. Request created." });
-              return;
-            }
+            console.log('Movie request data:', movieRequest);
             
-            if (status === "CANCELLED" || status === "EXPIRED" || status === "FAILED") {
-              localStorage.removeItem("cfPendingOrder");
-              setPaymentStatusInfo({ state: "failed", message: "Payment failed or expired. Please try again." });
-              return;
-            }
+            const docRef = await addDoc(collection(db, "movieRequests"), movieRequest);
+            console.log('Movie request created successfully:', docRef.id);
             
-            // Payment is still pending, check again after a delay
-            setPaymentStatusInfo({ state: "pending", message: "Payment verification in progress..." });
-            if (attempts < 6) {
-              setTimeout(checkPaymentStatus, 5000);
-            }
-          } catch (e) {
-            console.error("Payment verification error:", e.message);
-            setPaymentStatusInfo({ state: "failed", message: "Could not verify payment. Please retry." });
+            localStorage.removeItem("cfPendingOrder");
+            setPaymentStatusInfo({ 
+              state: "success", 
+              message: "Payment verified! Movie request created." 
+            });
+            
+          } catch (firestoreError) {
+            console.error('=== FIRESTORE ERROR ===');
+            console.error('Error creating movie request:', firestoreError);
+            setPaymentStatusInfo({ 
+              state: "error", 
+              message: "Payment verified but failed to create movie request. Please contact support." 
+            });
           }
-        };
-
-        checkPaymentStatus();
+          
+        } else if (result.status === "FAILED") {
+          console.log('=== PAYMENT FAILED ===');
+          localStorage.removeItem("cfPendingOrder");
+          setPaymentStatusInfo({ 
+            state: "error", 
+            message: "Payment failed. Please try again." 
+          });
+          
+        } else if (result.status === "PENDING") {
+          console.log('=== PAYMENT PENDING ===');
+          setPaymentStatusInfo({ 
+            state: "pending", 
+            message: `Payment still pending... (Attempt ${result.attempts}/${result.maxAttempts})` 
+          });
+          
+          // Frontend will handle retries by calling this function again
+          if (result.attempts < result.maxAttempts) {
+            setTimeout(() => verifyAndCreateRequest(), 5000);
+          }
+          
+        } else {
+          console.log('=== UNKNOWN PAYMENT STATUS ===');
+          setPaymentStatusInfo({ 
+            state: "error", 
+            message: result.message || "Payment verification failed. Please contact support." 
+          });
+        }
       } catch (e) {
         console.error("Payment verification failed", e?.message);
       }
@@ -120,59 +248,89 @@ const Dashboard = () => {
 
   const handleRequestSubmit = async (e) => {
     e.preventDefault();
+    if (!mobile || !movie || paying) return;
+    
+    setPaying(true);
     setPayError("");
-    if (movie.trim() && mobile.trim() && user?.email) {
-      try {
-        setPaying(true);
-
-        // No SDK check needed - using direct payment links
-
-        // Create payment order via our backend API
-        const paymentRequest = {
-          orderAmount: 5,
+    
+    try {
+      const response = await fetch('/api/create-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderAmount: 6, // Fixed amount for testing
           customerPhone: mobile,
-          customerEmail: user.email,
-          returnUrl: `${window.location.origin}/#/dashboard`
-        };
+          customerEmail: user?.email || `customer_${Date.now()}@example.com`,
+          returnUrl: `${APP_BASE_URL}/#/dashboard`
+        })
+      });
 
-        const response = await fetch('/api/create-payment', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(paymentRequest)
-        });
-
-        const paymentData = await response.json();
-
-        if (!paymentData.success) {
-          throw new Error(paymentData.error || 'Failed to create payment order');
-        }
-
-        // Store order details for verification later
-        const orderData = {
-          orderId: paymentData.order_id,
-          mobile,
-          movie,
-          language,
-          amount: 5
-        };
-        
-        localStorage.setItem("cfPendingOrder", JSON.stringify(orderData));
-
-        // Use direct payment link for reliable redirection
-        if (paymentData.payment_link) {
-          console.log("Redirecting to payment:", paymentData.payment_link);
-          window.location.href = paymentData.payment_link;
-        } else {
-          throw new Error("No payment link available");
-        }
-      } catch (err) {
-        console.error("Error in request submit/payment", err?.response?.data || err?.message);
-        setPayError(err?.response?.data?.message || err?.message || "Something went wrong");
-      } finally {
-        setPaying(false);
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Payment creation failed: ${errorData}`);
       }
+
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Payment creation failed');
+      }
+
+      const { order_id, payment_session_id } = data;
+      
+      if (!order_id || !payment_session_id) {
+        throw new Error('Invalid payment response from server');
+      }
+
+      // Store pending order details
+      localStorage.setItem("cfPendingOrder", JSON.stringify({ 
+        orderId: order_id, 
+        mobile, 
+        movie, 
+        language 
+      }));
+
+      // Launch Cashfree checkout
+      console.log('=== LAUNCHING CASHFREE CHECKOUT ===');
+      console.log('Payment Session ID:', payment_session_id);
+      console.log('Payment Link:', data.payment_link);
+      console.log('Cashfree SDK Ready:', !!cashfreeRef.current);
+      
+      // Try direct redirect first (more reliable)
+      if (data.payment_link) {
+        console.log('Using direct payment link redirect');
+        window.open(data.payment_link, '_self');
+        return;
+      }
+      
+      // Fallback to SDK checkout
+      if (!cashfreeRef.current) {
+        throw new Error("Payment SDK not ready and no payment link available");
+      }
+      
+      console.log('Falling back to SDK checkout...');
+      try {
+        await cashfreeRef.current.checkout({
+          paymentSessionId: payment_session_id,
+          redirectTarget: "_self",
+        });
+        console.log('SDK checkout launched successfully');
+      } catch (checkoutError) {
+        console.error('SDK checkout also failed:', checkoutError);
+        throw new Error('Both checkout methods failed');
+      }
+
+    } catch (err) {
+      console.error("=== PAYMENT ERROR ===");
+      console.error("Error type:", err.constructor.name);
+      console.error("Error message:", err.message);
+      console.error("Error stack:", err.stack);
+      console.error("Full error object:", err);
+      setPayError(err.message || "Something went wrong");
+    } finally {
+      setPaying(false);
     }
   };
 
