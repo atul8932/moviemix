@@ -1,34 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import "../styles.css";
+import moviesData from "../../data/hollywood.json";
 
 const HollywoodMovies = () => {
-  const [movies, setMovies] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchMovies = async () => {
-      try {
-        const response = await fetch('/src/data/hollywood.json');
-        if (!response.ok) {
-          throw new Error('Failed to fetch movies data');
-        }
-        const data = await response.json();
-        setMovies(data && data.movies ? data.movies : []);
-      } catch (error) {
-        console.error('Error fetching movies:', error);
-        setMovies([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMovies();
-  }, []);
-
-  if (loading) {
-    return <div style={{ padding: 24 }}>Loading...</div>;
-  }
+  const movies = (moviesData && moviesData.movies) ? moviesData.movies : [];
 
   const renderStars = (rating) => {
     const full = Math.floor(rating);
