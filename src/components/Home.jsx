@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
-import { 
+import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "firebase/auth";
 import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import "./styles.css";
-
+import googleIcon from "../assets/google-icon.svg";
 const Home = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authTab, setAuthTab] = useState("login");
@@ -42,13 +44,10 @@ const Home = () => {
     setError("");
     try {
       if (authTab === "signup") {
-        // Create account
         const cred = await createUserWithEmailAndPassword(auth, authForm.email, authForm.password);
-        // Update profile with display name
         if (authForm.name) {
           await updateProfile(cred.user, { displayName: authForm.name });
         }
-        // Create user doc if not exists
         const userRef = doc(db, "users", cred.user.uid);
         const snap = await getDoc(userRef);
         if (!snap.exists()) {
@@ -63,12 +62,38 @@ const Home = () => {
           });
         }
       } else {
-        // Login
         await signInWithEmailAndPassword(auth, authForm.email, authForm.password);
       }
-      // Redirect will happen via onAuthStateChanged
     } catch (err) {
       setError(mapAuthError(err?.code));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setError("");
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
+      if (!snap.exists()) {
+        await setDoc(userRef, {
+          uid: user.uid,
+          name: user.displayName || "",
+          email: user.email,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          role: "user",
+          status: "active",
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Google sign-in failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -206,6 +231,13 @@ const Home = () => {
                 {loading ? <span className="loading-spinner-small"></span> : (authTab === "login" ? "Login" : "Sign Up")}
               </button>
             </form>
+
+            <div className="divider">OR</div>
+
+            <button className="btn btn-google" onClick={handleGoogleSignIn} disabled={loading}>
+              <img src= {googleIcon} alt="Google" className="google-icon" />
+              Sign In with Google
+            </button>
           </div>
         </div>
       )}
