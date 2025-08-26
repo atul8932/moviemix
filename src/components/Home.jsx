@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { auth, db } from "../firebase";
-import {
+import { 
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   onAuthStateChanged,
-  updateProfile,
-  GoogleAuthProvider,
-  signInWithPopup
+  updateProfile
 } from "firebase/auth";
 import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import "./styles.css";
-import googleIcon from "../assets/google-icon.svg";
+
 const Home = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authTab, setAuthTab] = useState("login");
@@ -44,10 +42,13 @@ const Home = () => {
     setError("");
     try {
       if (authTab === "signup") {
+        // Create account
         const cred = await createUserWithEmailAndPassword(auth, authForm.email, authForm.password);
+        // Update profile with display name
         if (authForm.name) {
           await updateProfile(cred.user, { displayName: authForm.name });
         }
+        // Create user doc if not exists
         const userRef = doc(db, "users", cred.user.uid);
         const snap = await getDoc(userRef);
         if (!snap.exists()) {
@@ -62,38 +63,12 @@ const Home = () => {
           });
         }
       } else {
+        // Login
         await signInWithEmailAndPassword(auth, authForm.email, authForm.password);
       }
+      // Redirect will happen via onAuthStateChanged
     } catch (err) {
       setError(mapAuthError(err?.code));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    setError("");
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      const userRef = doc(db, "users", user.uid);
-      const snap = await getDoc(userRef);
-      if (!snap.exists()) {
-        await setDoc(userRef, {
-          uid: user.uid,
-          name: user.displayName || "",
-          email: user.email,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          role: "user",
-          status: "active",
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Google sign-in failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -131,9 +106,14 @@ const Home = () => {
           <span className="logo-icon">🎬</span>
           <span className="logo-text">MovieHub</span>
         </div>
+        {/* <nav className="header-links" style={{ display: "flex", gap: 16 }}>
+          <Link className="btn btn-text white-text" to="/bollywood" >Bollywood</Link>
+          <Link className="btn btn-text white-text" to="/hollywood">Hollywood</Link>
+          <Link className="btn btn-text white-text" to="/ott">OTT Originals</Link>
+        </nav> */}
         <div className="header-actions">
           <button 
-            className="btn btn-text" 
+            className="btn btn-primary" 
             onClick={() => { setAuthTab("login"); setShowAuthModal(true); }}
           >
             Login
@@ -152,6 +132,25 @@ const Home = () => {
         <div className="hero-content">
           <h1 className="hero-title">Download Your Movies, Anytime, Anywhere</h1>
           <p className="hero-subtitle">Request movies optimized for your device. Get them in minutes.</p>
+          <div className="offer-card">
+            <span className="offer-badge">🔥 Limited-time Offer</span>
+            <h3 className="offer-title">Download Movies for Just ₹5 – Say Goodbye to Expensive OTT Subscriptions!</h3>
+            <div className="offer-divider"></div>
+            <p className="offer-text">
+              Tired of juggling multiple OTT platforms and paying high monthly fees? Discover a smarter way to watch your favorite movies by downloading them for just ₹5! Enjoy blockbuster entertainment on your own terms without burning a hole in your pocket. This affordable solution could change how you consume content—no more subscriptions, no more limits. Just pay per movie and watch anytime, anywhere.
+            </p>
+          </div>
+
+          <div className="offer-row">
+            <div className="offer-mini-card">
+              <h4 className="offer-mini-title">Pay-Per-Movie Convenience</h4>
+              <p className="offer-mini-text">No long-term commitments. Pay only for what you watch and enjoy it offline anytime.</p>
+            </div>
+            <div className="offer-mini-card">
+              <h4 className="offer-mini-title">Optimized for Your Device</h4>
+              <p className="offer-mini-text">We tailor downloads for better quality and smaller file size across phones and tablets.</p>
+            </div>
+          </div>
           <button className="btn btn-primary btn-large" onClick={handleGetStarted}>Get Started</button>
         </div>
         <div className="hero-background">
@@ -231,13 +230,6 @@ const Home = () => {
                 {loading ? <span className="loading-spinner-small"></span> : (authTab === "login" ? "Login" : "Sign Up")}
               </button>
             </form>
-
-            <div className="divider">OR</div>
-
-            <button className="btn btn-google" onClick={handleGoogleSignIn} disabled={loading}>
-              <img src= {googleIcon} alt="Google" className="google-icon" />
-              Sign In with Google
-            </button>
           </div>
         </div>
       )}
