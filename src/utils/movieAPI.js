@@ -83,7 +83,18 @@ export const movieAPI = {
         throw new Error('Failed to fetch TV shows');
       }
 
-      return await response.json();
+      const data = await response.json();
+
+      // Map TV genre IDs to names for card display
+      if (data.results && data.results.length > 0) {
+        const genresData = await this.getGenres();
+        data.results = data.results.map(tv => ({
+          ...tv,
+          genre_names: getGenreNames(tv.genre_ids, genresData)
+        }));
+      }
+
+      return data;
     } catch (error) {
       console.error('Error discovering TV:', error);
       throw error;
