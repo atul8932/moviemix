@@ -120,6 +120,44 @@
   `with_runtime.gte`   `90`      Minimum 90 minutes
   `with_runtime.lte`   `180`     Maximum 180 minutes
 
+## 🔹 Hollywood Defaults (English + US)
+
+Use these filters to focus on Hollywood movies (English originals, US market):
+
+- `with_original_language`: `en` (movies originally in English)
+- `region`: `US` (tailor results by US theatrical release window)
+- `language`: `en-US` (response language)
+- Recommended: `with_origin_country=US` if you want US-produced titles only
+
+### Example: Discover popular Hollywood movies
+
+```txt
+https://api.themoviedb.org/3/discover/movie
+  ?language=en-US
+  &include_adult=false
+  &sort_by=popularity.desc
+  &with_original_language=en
+  &region=US
+  &page=1
+```
+
+### Example with genres (Action OR Adventure)
+
+```txt
+https://api.themoviedb.org/3/discover/movie
+  ?language=en-US
+  &include_adult=false
+  &sort_by=popularity.desc
+  &with_genres=28|12
+  &with_original_language=en
+  &region=US
+  &page=1
+```
+
+### Notes
+- `region` impacts release_date filtering and some popularity windows; keep `language=en-US` for consistent metadata.
+- `with_original_language=en` keeps non-dubbed titles; combine with `with_origin_country=US` to narrow to US productions.
+
 ## Example Query
 
     https://api.themoviedb.org/3/discover/movie?api_key=YOUR_KEY

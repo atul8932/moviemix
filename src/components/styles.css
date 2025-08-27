@@ -1281,3 +1281,13 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 12px;
   font-size: 14px;
 }
+
+.success-message {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  font-size: 14px;
+}
