@@ -1,0 +1,103 @@
+Movie/TV Search – Single Existing Route Design (Read-Only Plan)
+
+1) Goal
+- Implement all four sections (Bollywood, Hollywood, OTT-English, OTT-Hindi) on ONE existing route: /bollywood
+- Use URL query param section to decide presets and API path (movie vs TV)
+
+2) Route Strategy (No New Route)
+- Keep existing route: /bollywood
+- Control via URL query params:
+  - section: bollywood | hollywood | ott-en | ott-hi
+  - page: number (default 1)
+  - sort_by: TMDB sort (default popularity.desc)
+  - with_genres: comma list (optional)
+  - q: keyword (optional)
+
+Examples
+- /bollywood?section=bollywood
+- /bollywood?section=hollywood
+- /bollywood?section=ott-en
+- /bollywood?section=ott-hi
+
+3) Header Navigation (Home.jsx)
+- Update links to point to /bollywood with section param.
+
+Diff (Home.jsx)
+- <Link className="btn btn-text white-text" to="/bollywood" >Bollywood</Link>
+- <Link className="btn btn-text white-text" to="/hollywood">Hollywood</Link>
+- <Link className="btn btn-text white-text" to="/ott">OTT Originals</Link>
++ <Link className="btn btn-text white-text" to="/bollywood?section=bollywood">Bollywood</Link>
++ <Link className="btn btn-text white-text" to="/bollywood?section=hollywood">Hollywood</Link>
++ <Link className="btn btn-text white-text" to="/bollywood?section=ott-en">OTT Originals (EN)</Link>
++ <Link className="btn btn-text white-text" to="/bollywood?section=ott-hi">OTT Originals (HI)</Link>
+
+4) Container Page (MovieDashboard) – Responsibilities
+- Continue to render on /bollywood route, but act as unified search page
+- Read URL query: section, page, sort_by, with_genres, q
+- Compute presets per section:
+  - bollywood → type: movie; with_original_language=hi
+  - hollywood → type: movie; with_original_language=en (note: TMDB uses en, not en-us); region=US (optional)
+  - ott-en → type: tv; with_original_language=en
+  - ott-hi → type: tv; with_original_language=hi
+- Build query and call corresponding endpoint via API utility
+- Render: SearchBar (keyword+genres), SortingControls, Grid (MovieCard/TVCard), PaginationControls
+
+5) API Mapping
+- Final API paths
+  - Movies: https://api.themoviedb.org/3/discover/movie
+  - TV:     https://api.themoviedb.org/3/discover/tv
+
+- Section → Presets → API params
+  - Bollywood (movies): with_original_language=hi, language=en-US, include_adult=false, sort_by=popularity.desc
+  - Hollywood (movies): with_original_language=en (mapping of requested en-us), language=en-US, include_adult=false, sort_by=popularity.desc, region=US (optional)
+  - OTT-English (tv):  with_original_language=en, language=en-US, sort_by=popularity.desc
+  - OTT-Hindi (tv):    with_original_language=hi, language=en-US, sort_by=popularity.desc
+
+Important
+- If a requirement states with_original_language=en-us, TMDB expects ISO-639-1 code en. We will implement en-us as: with_original_language=en and keep response language=en-US.
+
+6) Frontend API Utility (src/utils/movieAPI.js) – Planned Contract
+- discoverMovies({ page, sort_by, with_genres, query, with_original_language, region })
+- discoverTV({ page, sort_by, with_genres, query, with_original_language, watch_region?, with_watch_providers?, with_watch_monetization_types? })
+
+7) Serverless Endpoints (api/) – Planned Contract
+- api/discover-movies.js
+  - Accepts: page, sort_by, with_genres, query, with_original_language, region
+  - Forwards to TMDB Discover Movie with Bearer token
+- api/discover-tv.js (TV)
+  - Accepts: page, sort_by, with_genres, query, with_original_language, watch_region, with_watch_providers, with_watch_monetization_types
+  - Forwards to TMDB Discover TV with Bearer token
+
+8) UI Flow (Single Page)
+1) Read section from URL and set presets
+2) Build query from presets + user controls (genres, sort, keyword, page)
+3) Call movies or TV endpoint based on section
+4) Render grid + sorting + pagination + search + genres
+
+9) Component Reuse
+- SearchBar: reuse as-is (keyword + genres)
+- SortingControls: reuse as-is (popularity.desc, release_date.desc, vote_average.desc)
+- MovieGrid/MovieCard: reuse for movies; for TV either map fields (name→title, first_air_date→release_date) or add TVCard later
+- PaginationControls: reuse as-is
+
+10) URL/State Sync
+- Persist page, sort_by, with_genres, q in URL for deep-linking
+- Switching OTT English/Hindi updates section to ott-en/ott-hi
+
+11) Acceptance Criteria
+- All header links land on /bollywood and show correct content per section
+- Correct mapping of original language: en (english), hi (hindi)
+- Movies use Discover Movie; OTT uses Discover TV
+- Sorting, pagination, search, genre filtering are consistent across sections
+- Loading, error, and empty states follow existing Home styles
+
+12) Notes & Constraints
+- No change to routes in App.jsx; only /bollywood is used
+- Hollywood requirement mentions en-us; implement via with_original_language=en + language=en-US
+- Optionally add region=US for Hollywood bias
+
+13) Implementation Steps (When Approved)
+1) Update Home.jsx links (as above)
+2) Enhance MovieDashboard to parse section and branch to movie vs TV calls
+3) Extend utilities and serverless endpoints to accept with_original_language (and region for movies)
+4) Verify UI behavior and URL sync across all sections 

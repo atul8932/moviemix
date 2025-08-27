@@ -39,6 +39,8 @@ export const movieAPI = {
       if (filters.sort_by) queryParams.append('sort_by', filters.sort_by);
       if (filters.with_genres) queryParams.append('with_genres', filters.with_genres);
       if (filters.query) queryParams.append('query', filters.query);
+      if (filters.with_original_language) queryParams.append('with_original_language', filters.with_original_language);
+      if (filters.region) queryParams.append('region', filters.region);
 
       const response = await fetch(`/api/discover-movies?${queryParams}`);
       if (!response.ok) {
@@ -59,6 +61,31 @@ export const movieAPI = {
       return data;
     } catch (error) {
       console.error('Error discovering movies:', error);
+      throw error;
+    }
+  },
+
+  async discoverTV(filters = {}) {
+    try {
+      const queryParams = new URLSearchParams();
+
+      if (filters.page) queryParams.append('page', filters.page);
+      if (filters.sort_by) queryParams.append('sort_by', filters.sort_by);
+      if (filters.with_genres) queryParams.append('with_genres', filters.with_genres);
+      if (filters.query) queryParams.append('query', filters.query);
+      if (filters.with_original_language) queryParams.append('with_original_language', filters.with_original_language);
+      if (filters.watch_region) queryParams.append('watch_region', filters.watch_region);
+      if (filters.with_watch_providers) queryParams.append('with_watch_providers', filters.with_watch_providers);
+      if (filters.with_watch_monetization_types) queryParams.append('with_watch_monetization_types', filters.with_watch_monetization_types);
+
+      const response = await fetch(`/api/discover-tv?${queryParams}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch TV shows');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error discovering TV:', error);
       throw error;
     }
   },

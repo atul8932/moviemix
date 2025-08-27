@@ -238,9 +238,10 @@ const Home = () => {
           <span className="logo-text">MovieHub</span>
         </div>
         <nav className="header-links" style={{ display: "flex", gap: 16 }}>
-          <Link className="btn btn-text white-text" to="/bollywood" >Bollywood</Link>
-          <Link className="btn btn-text white-text" to="/hollywood">Hollywood</Link>
-          <Link className="btn btn-text white-text" to="/ott">OTT Originals</Link>
+          <Link className="btn btn-text white-text" to="/bollywood?section=bollywood" >Bollywood</Link>
+          <Link className="btn btn-text white-text" to="/bollywood?section=hollywood">Hollywood</Link>
+          <Link className="btn btn-text white-text" to="/bollywood?section=ott-en">OTT Originals (EN)</Link>
+          <Link className="btn btn-text white-text" to="/bollywood?section=ott-hi">OTT Originals (HI)</Link>
         </nav>
         <div className="header-actions">
           <button 

@@ -34,13 +34,15 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'TMDB Bearer token not configured' });
     }
 
-    const { page, sort_by, with_genres, query } = req.query;
+    const { page, sort_by, with_genres, query, with_original_language, region } = req.query;
     
     console.log('=== REQUEST PARAMETERS ===');
     console.log('- page:', page);
     console.log('- sort_by:', sort_by);
     console.log('- with_genres:', with_genres);
     console.log('- query:', query);
+    console.log('- with_original_language:', with_original_language);
+    console.log('- region:', region);
 
     // Get today's date in YYYY-MM-DD format for TMDB API
     const today = new Date().toISOString().split('T')[0];
@@ -57,6 +59,14 @@ export default async function handler(req, res) {
 
     if (with_genres) {
       queryParams.append('with_genres', with_genres);
+    }
+
+    if (with_original_language) {
+      queryParams.append('with_original_language', with_original_language);
+    }
+
+    if (region) {
+      queryParams.append('region', region);
     }
 
     if (query) {

@@ -3,7 +3,7 @@
 
 ## Code Changes Plan (File-by-File) – From Home.jsx to Single Route Page
 
-This section documents the precise code edits to move to a unified single-route movie/TV search page at `/search`. It is read-only documentation; we will implement after you approve.
+This section documents the precise code edits to use ONE existing route `/bollywood` as the unified movie/TV search page. It is read-only documentation; we will implement after you approve.
 
 ### 1) Update Header Navigation (Home.jsx)
 
@@ -14,28 +14,21 @@ Example edit in `src/components/Home.jsx`:
 - <Link className="btn btn-text white-text" to="/bollywood" >Bollywood</Link>
 - <Link className="btn btn-text white-text" to="/hollywood">Hollywood</Link>
 - <Link className="btn btn-text white-text" to="/ott">OTT Originals</Link>
-+ <Link className="btn btn-text white-text" to="/search?section=bollywood">Bollywood</Link>
-+ <Link className="btn btn-text white-text" to="/search?section=hollywood">Hollywood</Link>
-+ <Link className="btn btn-text white-text" to="/search?section=ott-en">OTT Originals</Link>
++ <Link className="btn btn-text white-text" to="/bollywood?section=bollywood">Bollywood</Link>
++ <Link className="btn btn-text white-text" to="/bollywood?section=hollywood">Hollywood</Link>
++ <Link className="btn btn-text white-text" to="/bollywood?section=ott-en">OTT Originals (EN)</Link>
++ <Link className="btn btn-text white-text" to="/bollywood?section=ott-hi">OTT Originals (HI)</Link>
 ```
 
 Notes:
 - We route the default OTT link to English; the page will have an in-page toggle to switch to OTT-Hindi (`section=ott-hi`).
 
-### 2) Add Single Route (App.jsx)
+### 2) Keep Single Existing Route (App.jsx)
 
-- Add a route for the unified search page.
-- Keep existing routes temporarily (optional) during transition; final step is to deprecate `/bollywood`, `/hollywood`, `/ott`.
+- Do NOT add a new route. We will use the existing `/bollywood` route as the unified page.
+- Query param `section` will determine content (bollywood, hollywood, ott-en, ott-hi).
 
-Example edit in `src/App.jsx`:
-```diff
-+ import MovieSearch from "./components/search/MovieSearch";
-  // ...
-  <Routes>
-    // existing routes
-+   <Route path="/search" element={<MovieSearch />} />
-  </Routes>
-```
+No route changes required in `src/App.jsx`.
 
 ### 3) New Page Component (MovieSearch.jsx)
 
