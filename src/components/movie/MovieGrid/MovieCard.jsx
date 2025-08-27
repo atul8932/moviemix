@@ -1,6 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { auth } from '../../../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
-const MovieCard = ({ movie, onCardClick }) => {
+const MovieCard = ({ movie, onCardClick, onRequestMovie }) => {
+  const [user, setUser] = useState(null);
+  
+  // Use Firebase auth directly (same as Dashboard.jsx)
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsub();
+  }, []);
+  
   const {
     id,
     title,
@@ -35,6 +47,27 @@ const MovieCard = ({ movie, onCardClick }) => {
     }
   };
 
+  // ADD this function
+  const handleRequestClick = (e) => {
+    e.stopPropagation(); // Prevent card click event
+    
+    if (user) {
+      // Logged-in user: Open in-app request flow
+      onRequestMovie(movie);
+    } else {
+      // Guest user: Open WhatsApp with pre-filled message
+      openWhatsAppRequest(movie.title);
+    }
+  };
+
+  // ADD this function
+  const openWhatsAppRequest = (movieTitle) => {
+    const phoneNumber = process.env.VITE_WHATSAPP_ADMIN_NUMBER || '919999999999';
+    const message = encodeURIComponent(`I want to request the movie ${movieTitle}`);
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
   return (
     <div className="movie-card" data-movie-id={id} onClick={handleCardClick}>
       <div className="movie-poster">
@@ -65,6 +98,14 @@ const MovieCard = ({ movie, onCardClick }) => {
         <p className="movie-overview">
           {truncateOverview(overview)}
         </p>
+        
+        {/* ADD Request Movie Button */}
+        <button 
+          className="btn btn-primary request-movie-btn"
+          onClick={handleRequestClick}
+        >
+          Request Movie
+        </button>
       </div>
     </div>
   );

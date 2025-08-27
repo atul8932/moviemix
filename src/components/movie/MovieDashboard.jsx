@@ -5,13 +5,25 @@ import SortingControls from './SortingControls/SortDropdown';
 import MovieGrid from './MovieGrid/MovieGrid';
 import PaginationControls from './Pagination/PaginationControls';
 import MovieModal from './MovieGrid/MovieModal';
+import RequestMovieModal from './RequestMovieModal';
 import { movieAPI } from '../../utils/movieAPI';
+import { auth } from '../../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 import './MovieDashboard.css';
 
 const MovieDashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
+  const [user, setUser] = useState(null);
+  
+  // Use Firebase auth directly (same as Dashboard.jsx)
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsub();
+  }, []);
 
   const section = params.get('section') || 'bollywood';
 
@@ -43,6 +55,10 @@ const MovieDashboard = () => {
   // Modal state
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // ADD these states for request modal
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [requestMovie, setRequestMovie] = useState(null);
 
   // Keep URL in sync when key params change
   useEffect(() => {
@@ -148,6 +164,78 @@ const MovieDashboard = () => {
     setSelectedMovie(null);
   };
 
+  // ADD this function - follows EXACT same flow as Dashboard
+  const handleMovieRequest = async (requestData) => {
+    if (!user) return;
+    
+    try {
+      // STEP 1: Set data in localStorage (SAME STRUCTURE as existing Dashboard)
+      localStorage.setItem("cfPendingOrder", JSON.stringify({ 
+        // Use EXACT same fields as existing Dashboard orders
+        orderId: null, // Will be set after payment creation
+        mobile: user.phoneNumber || '9999999999',
+        movie: requestData.movieName, // Use 'movie' field (same as Dashboard)
+        language: requestData.language,
+        // Additional movie-specific data (will be preserved)
+        movieId: requestData.movieId,
+        releaseDate: requestData.releaseDate,
+        overview: requestData.overview,
+        posterPath: requestData.posterPath,
+        additionalNotes: requestData.additionalNotes,
+        // User details (same as Dashboard)
+        userId: user.uid,
+        userEmail: user.email
+      }));
+
+      // STEP 2: Redirect to payment (same as Dashboard flow)
+      const response = await fetch('/api/create-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderAmount: 6, // Fixed amount for movie requests
+          customerPhone: user.phoneNumber || '9999999999',
+          customerEmail: user.email || `customer_${Date.now()}@example.com`,
+          returnUrl: `${window.location.origin}/#/dashboard`, // Redirect to Dashboard
+          orderNote: `Movie Request: ${requestData.movieName} (${requestData.language})`
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Payment creation failed: ${errorData}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Payment creation failed');
+      }
+
+      // STEP 3: Update localStorage with orderId (same as Dashboard)
+      const updatedPendingOrder = JSON.parse(localStorage.getItem("cfPendingOrder"));
+      updatedPendingOrder.orderId = data.order_id;
+      localStorage.setItem("cfPendingOrder", JSON.stringify(updatedPendingOrder));
+
+      // STEP 4: Redirect to payment (same as Dashboard)
+      if (data.payment_link) {
+        window.open(data.payment_link, '_self');
+      }
+      
+    } catch (error) {
+      console.error('Payment initiation error:', error);
+      // Remove from localStorage if payment creation fails
+      localStorage.removeItem("cfPendingOrder");
+    }
+  };
+
+  // ADD this function
+  const handleRequestMovie = (movie) => {
+    setRequestMovie(movie);
+    setShowRequestModal(true);
+  };
+
   return (
     <div className="movie-dashboard">
       <SearchBar 
@@ -176,6 +264,7 @@ const MovieDashboard = () => {
           <MovieGrid 
             movies={items} 
             onCardClick={handleCardClick}
+            onRequestMovie={handleRequestMovie} // Add this prop
           />
           <PaginationControls
             currentPage={currentPage}
@@ -190,6 +279,16 @@ const MovieDashboard = () => {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
       />
+
+      {/* ADD Request Modal */}
+      {showRequestModal && requestMovie && (
+        <RequestMovieModal
+          movie={requestMovie}
+          isOpen={showRequestModal}
+          onClose={() => setShowRequestModal(false)}
+          onSubmit={handleMovieRequest}
+        />
+      )}
     </div>
   );
 };
