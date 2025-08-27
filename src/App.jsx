@@ -4,9 +4,7 @@ import Home from "./components/Home";
 import Dashboard from "./components/Dashboard";
 import WaitingPage from "./components/WaitingPage";
 import AdminPanel from "./components/AdminPanel";
-import MovieDashboard from "./components/bollywood/MovieDashboard";
-import HollywoodMovies from "./components/hollywood/HollywoodMovies";
-import OTTMovies from "./components/ott/OTTMovies";
+import MovieDashboard from "./components/movie/MovieDashboard";
 
 import ContactUs from "./components/ContactUs";
 import CancellationPolicy from "./components/CancellationPolicy";
@@ -34,8 +32,6 @@ const AppContent = () => {
           <Route path="/cancellation-policy" element={<CancellationPolicy />} />
           <Route path="/privacy-policies" element={<PrivacyPolicy />} />
           <Route path="/bollywood" element={<MovieDashboard />} />
-          <Route path="/hollywood" element={<HollywoodMovies />} />
-          <Route path="/ott" element={<OTTMovies />} />
           <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
           {/* New route for testing checkout */}
           <Route path="/checkout" element={<Checkout />} />
