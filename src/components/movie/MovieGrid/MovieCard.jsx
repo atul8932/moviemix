@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { auth } from '../../../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
-const MovieCard = ({ movie, onCardClick, onRequestMovie }) => {
+const MovieCard = ({ movie, onCardClick, onRequestMovie, onTriggerWhatsApp }) => {
   const [user, setUser] = useState(null);
   
   // Use Firebase auth directly (same as Dashboard.jsx)
@@ -47,7 +47,7 @@ const MovieCard = ({ movie, onCardClick, onRequestMovie }) => {
     }
   };
 
-  // ADD this function
+  // ADD this function - uses the WhatsApp trigger function
   const handleRequestClick = (e) => {
     e.stopPropagation(); // Prevent card click event
     
@@ -55,17 +55,9 @@ const MovieCard = ({ movie, onCardClick, onRequestMovie }) => {
       // Logged-in user: Open in-app request flow
       onRequestMovie(movie);
     } else {
-      // Guest user: Open WhatsApp with pre-filled message
-      openWhatsAppRequest(movie.title);
+      // Guest user: Trigger WhatsAppWidget to open
+      onTriggerWhatsApp(movie.title);
     }
-  };
-
-  // ADD this function
-  const openWhatsAppRequest = (movieTitle) => {
-    const phoneNumber = process.env.VITE_WHATSAPP_ADMIN_NUMBER || '919999999999';
-    const message = encodeURIComponent(`I want to request the movie ${movieTitle}`);
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
-    window.open(whatsappUrl, '_blank');
   };
 
   return (

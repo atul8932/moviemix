@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import SearchBar from './SearchBar/SearchBar';
 import SortingControls from './SortingControls/SortDropdown';
@@ -6,6 +6,7 @@ import MovieGrid from './MovieGrid/MovieGrid';
 import PaginationControls from './Pagination/PaginationControls';
 import MovieModal from './MovieGrid/MovieModal';
 import RequestMovieModal from './RequestMovieModal';
+import WhatsAppWidget from '../WhatsAppWidget';
 import { movieAPI } from '../../utils/movieAPI';
 import { auth } from '../../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -16,6 +17,7 @@ const MovieDashboard = () => {
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const [user, setUser] = useState(null);
+  const whatsappWidgetRef = useRef();
   
   // Use Firebase auth directly (same as Dashboard.jsx)
   useEffect(() => {
@@ -236,6 +238,12 @@ const MovieDashboard = () => {
     setShowRequestModal(true);
   };
 
+  // ADD this function to trigger WhatsAppWidget
+  const triggerWhatsApp = (movieTitle) => {
+    const message = `I want to request the movie ${movieTitle}`;
+    whatsappWidgetRef.current?.openWithMessage(message);
+  };
+
   return (
     <div className="movie-dashboard">
       <SearchBar 
@@ -265,6 +273,7 @@ const MovieDashboard = () => {
             movies={items} 
             onCardClick={handleCardClick}
             onRequestMovie={handleRequestMovie} // Add this prop
+            onTriggerWhatsApp={triggerWhatsApp} // Add this prop
           />
           <PaginationControls
             currentPage={currentPage}
@@ -289,6 +298,9 @@ const MovieDashboard = () => {
           onSubmit={handleMovieRequest}
         />
       )}
+
+      {/* ADD WhatsApp Widget */}
+      <WhatsAppWidget ref={whatsappWidgetRef} />
     </div>
   );
 };

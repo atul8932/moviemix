@@ -1,7 +1,7 @@
 import React from 'react';
 import MovieCard from './MovieCard';
 
-const MovieGrid = ({ movies, onCardClick, onRequestMovie }) => {
+const MovieGrid = ({ movies, onCardClick, onRequestMovie, onTriggerWhatsApp }) => {
   if (!movies || movies.length === 0) {
     return <div className="no-movies">No movies found</div>;
   }
@@ -14,6 +14,7 @@ const MovieGrid = ({ movies, onCardClick, onRequestMovie }) => {
           movie={movie} 
           onCardClick={onCardClick}
           onRequestMovie={onRequestMovie}
+          onTriggerWhatsApp={onTriggerWhatsApp}
         />
       ))}
     </div>

@@ -1,8 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { FaWhatsapp } from "react-icons/fa";
+import { auth } from "../firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
-const WhatsAppWidget = () => {
+const WhatsAppWidget = forwardRef((props, ref) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [message, setMessage] = useState("Hi I want to connect with you");
+
+  // Expose methods to parent components
+  useImperativeHandle(ref, () => ({
+    openWithMessage: (customMessage) => {
+      setMessage(customMessage);
+      setIsOpen(true);
+    },
+    open: () => setIsOpen(true),
+    close: () => setIsOpen(false)
+  }));
 
   const openDrawer = () => setIsOpen(true);
   const closeDrawer = () => setIsOpen(false);
@@ -30,18 +43,18 @@ const WhatsAppWidget = () => {
           </div>
           <div className="wa-drawer-body">
             <a
-              href="https://wa.me/917070830015?text=Hi%20I%20want%20to%20connect%20with%20you"
+              href={`https://wa.me/917070830015?text=${encodeURIComponent(message)}`}
               target="_blank"
               rel="noreferrer"
               className="btn btn-primary btn-full"
             >
-              Hii Buddy,want help please message here
+              {message.includes("movie") ? "Request Movie via WhatsApp" : "Hii Buddy,want help please message here"}
             </a>
           </div>
         </aside>
       )}
     </>
   );
-};
+});
 
 export default WhatsAppWidget; 
