@@ -18,7 +18,7 @@ const Dashboard = () => {
   const [movie, setMovie] = useState("");
   const [language, setLanguage] = useState("english");
   const [orders, setOrders] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  // removed in favor of nav to unified search page
   const [statusFilter, setStatusFilter] = useState("all");
   const [activeMenu, setActiveMenu] = useState("home");
   const [user, setUser] = useState(null);
@@ -354,7 +354,7 @@ const Dashboard = () => {
   };
 
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.movieName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = true;
     const matchesStatus = statusFilter === "all" || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -418,16 +418,12 @@ const Dashboard = () => {
       <main className="main-content">
         {/* Top Navbar */}
         <header className="top-navbar">
-          <div className="search-container">
-            <input
-              type="text"
-              placeholder="Search movies..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
-            <span className="search-icon">🔍</span>
-          </div>
+          <nav className="header-links" style={{ display: "flex", gap: 16 }}>
+            <a className="btn btn-text" href="#/bollywood?section=bollywood">Bollywood</a>
+            <a className="btn btn-text" href="#/bollywood?section=hollywood">Hollywood</a>
+            <a className="btn btn-text" href="#/bollywood?section=ott-en">OTT Originals (EN)</a>
+            <a className="btn btn-text" href="#/bollywood?section=ott-hi">OTT Originals (HI)</a>
+          </nav>
           
           <div className="user-menu">
             <div className="user-avatar">{avatarLetter}</div>
