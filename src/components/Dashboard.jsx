@@ -23,11 +23,22 @@ const Dashboard = () => {
   const [activeMenu, setActiveMenu] = useState("home");
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile sidebar state
   const navigate = useNavigate();
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState("");
   const [paymentStatusInfo, setPaymentStatusInfo] = useState({ state: null, message: "" });
   const cashfreeRef = useRef(null);
+  
+  // Toggle mobile sidebar
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+  
+  // Close sidebar when clicking outside
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
 
   // Auth guard and user state
   useEffect(() => {
@@ -385,7 +396,7 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
         <div className="sidebar-header">
           <div className="logo">
             <span className="logo-icon">🎬</span>
@@ -414,8 +425,18 @@ const Dashboard = () => {
         </div>
       </aside>
 
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
+        <div className="mobile-overlay" onClick={closeSidebar}></div>
+      )}
+
       {/* Main Content */}
       <main className="main-content">
+        {/* Mobile Menu Toggle Button */}
+        <button className="mobile-menu-toggle" onClick={toggleSidebar}>
+          ☰
+        </button>
+        
         {/* Top Navbar */}
         <header className="top-navbar">
           <nav className="header-links" style={{ display: "flex", gap: 16 }}>

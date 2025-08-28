@@ -107,10 +107,15 @@
 }
 
 .genre-option {
-  padding: 12px 16px;
+  display: flex;
+  color: black;
   cursor: pointer;
   border-bottom: 1px solid #f8f9fa;
   transition: background-color 0.2s ease;
+}
+
+.genre-name {
+  margin-left: 5px;
 }
 
 .genre-option:hover {
@@ -146,7 +151,7 @@
 
 .sorting-controls label {
   font-weight: 600;
-  color: #495057;
+  /* color: #495057; */
   white-space: nowrap;
 }
 
@@ -166,7 +171,7 @@
 }
 
 .results-info {
-  color: #6c757d;
+  /* color: #6c757d; */
   font-size: 14px;
   font-weight: 500;
 }
@@ -421,7 +426,7 @@
 
 .page-info {
   margin: 0 1rem;
-  color: #6c757d;
+  /* color: #6c757d; */
   font-size: 14px;
 }
 
@@ -641,3 +646,7 @@
   color: #6c757d;
   font-size: 18px;
 } 
+
+.genre-checkbox{
+  margin-left: 5px;
+}
