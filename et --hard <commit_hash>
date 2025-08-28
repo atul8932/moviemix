@@ -1,0 +1,67 @@
+[33mfbc64ce[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m 6
+[33m1f36597[m movie dashboard ready
+[33m2a63c98[m movie
+[33m1fded27[m bollywood movies
+[33me7e9578[m push
+[33m841f9f0[m dashboard
+[33me58bd24[m push
+[33md2d7479[m test pg
+[33mabbf089[m push
+[33mc60a78a[m create payment modification
+[33m2d6633d[m[33m ([m[1;31morigin/dev_test[m[33m)[m Remove Cashfree SDK to fix PaymentJSInterface error
+[33m34d7a80[m Fix Cashfree SDK PaymentJSInterface error with fallback
+[33m9555cd7[m Fix payment session ID mapping for Cashfree SDK
+[33m5781f02[m Fix payment verification caching and add debugging
+[33m91f4b03[m Fix payment flow to use production mode
+[33m4326c6f[m Update Cashfree API to production environment
+[33mb98432d[m adding 6
+[33m320b4c4[m Revert "commit handle"
+[33m0d586d7[m Revert "cashfree commit"
+[33mbd7452c[m cashfree commit
+[33mdce1756[m commit handle
+[33m50807fc[m Update Cashfree API with real credentials
+[33mcc3de23[m Recreate Cashfree API endpoints with placeholder credentials
+[33md57a226[m Fix environment variable access in Vercel functions
+[33m3b72ab0[m Complete Cashfree payment integration
+[33m49a076d[m Document Cashfree integration requirements
+[33m0f9c8d0[m Implement Cashfree Drop Flow integration
+[33m2335ef1[m Revert to direct Cashfree API calls
+[33mba7d6cb[m Fix Vercel runtime configuration error
+[33m4815c40[m Add debugging and ensure relative API calls
+[33md86cbcb[m Use fetch instead of axios for Vercel API
+[33m3959762[m Fix CORS configuration for Vercel API
+[33m8afc2ad[m Fix CORS and API proxy for Vercel deployment
+[33m6439ee2[m api_issue
+[33m5a687a6[m push
+[33m7fa9771[m Create .env.local
+[33m2f6b05b[m test
+[33m7e0c1b4[m adding pg
+[33mb3d7c07[m loader and message
+[33m87cfc5a[m support
+[33md80ad16[m removing nav
+[33mcaeb765[m logo changes
+[33m908ba7e[m nav hide
+[33m8b75dd9[m footer changes
+[33mc2536bf[m resolve conflict, hollywood ,bollywood
+[33m9a5129f[m Merge pull request #6 from atul8932/dev_types
+[33m8c896e1[m style_changes
+[33m64f4399[m Merge pull request #3 from atul8932/atul
+[33m5806d9b[m Merge pull request #4 from atul8932/description
+[33m924ec4d[m description added
+[33md3d8859[m description added
+[33ma73e8f0[m new legal pages
+[33m6af4c3e[m[33m ([m[1;32mmain[m[33m)[m title fixed
+[33m7fb9ee5[m hollywood
+[33mc8f5624[m ratings added
+[33m0acb1ae[m bollywood movies
+[33m61d16d9[m Merge pull request #2 from atul8932/development
+[33m2d9b328[m[33m ([m[1;31morigin/development[m[33m)[m language addition
+[33m7a2789d[m Merge pull request #1 from atul8932/development
+[33m7940a7c[m refresh fix
+[33mdf9a8db[m final code
+[33mf21caf8[m login
+[33m2ec5c06[m movie link
+[33m719c623[m Revert "new change"
+[33m93586f6[m new change
+[33m51bdcd7[m payment status page
+[33me092355[m inital commit for moviemix

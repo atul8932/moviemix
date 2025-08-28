@@ -266,10 +266,10 @@ const Home = () => {
           <p className="hero-subtitle">Request movies optimized for your device. Get them in minutes.</p>
           <div className="offer-card">
             <span className="offer-badge">🔥 Limited-time Offer</span>
-            <h3 className="offer-title">Download Movies for Just ₹5 – Say Goodbye to Expensive OTT Subscriptions!</h3>
+            <h3 className="offer-title">Download Movies for Just ₹6 – Say Goodbye to Expensive OTT Subscriptions!</h3>
             <div className="offer-divider"></div>
             <p className="offer-text">
-              Tired of juggling multiple OTT platforms and paying high monthly fees? Discover a smarter way to watch your favorite movies by downloading them for just ₹5! Enjoy blockbuster entertainment on your own terms without burning a hole in your pocket. This affordable solution could change how you consume content—no more subscriptions, no more limits. Just pay per movie and watch anytime, anywhere.
+              Tired of juggling multiple OTT platforms and paying high monthly fees? Discover a smarter way to watch your favorite movies by downloading them for just ₹6! Enjoy blockbuster entertainment on your own terms without burning a hole in your pocket. This affordable solution could change how you consume content—no more subscriptions, no more limits. Just pay per movie and watch anytime, anywhere.
             </p>
           </div>
 
