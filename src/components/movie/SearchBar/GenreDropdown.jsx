@@ -49,6 +49,7 @@ const GenreDropdown = ({ genres, selectedGenres, onGenreChange }) => {
             <label key={genre.id} className="genre-option">
               <input
                 type="checkbox"
+                className="genre-checkbox"
                 checked={selectedGenres.includes(genre.id)}
                 onChange={() => handleGenreToggle(genre.id)}
               />
