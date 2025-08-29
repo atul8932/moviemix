@@ -1,6 +1,7 @@
 import React from "react";
 import { HashRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Home from "./components/Home";
+import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
 import WaitingPage from "./components/WaitingPage";
 import AdminPanel from "./components/AdminPanel";
@@ -23,6 +24,7 @@ const AppContent = () => {
       <div className="flex-grow">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/waiting/:mobile" element={<WaitingPage />} />
           <Route path="/waiting" element={<WaitingPage />} />

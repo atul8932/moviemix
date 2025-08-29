@@ -340,6 +340,9 @@
   background: #f8f9fa;
   border-radius: 8px;
 }
+.text-movie{
+  color: #212529;
+}
 
 .movie-details img {
   width: 100px;

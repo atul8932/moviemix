@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { auth } from '../../../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 const MovieCard = ({ movie, onCardClick, onRequestMovie, onTriggerWhatsApp }) => {
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
   
   // Use Firebase auth directly (same as Dashboard.jsx)
   useEffect(() => {
@@ -55,8 +57,8 @@ const MovieCard = ({ movie, onCardClick, onRequestMovie, onTriggerWhatsApp }) =>
       // Logged-in user: Open in-app request flow
       onRequestMovie(movie);
     } else {
-      // Guest user: Trigger WhatsAppWidget to open
-      onTriggerWhatsApp(movie.title);
+      // Guest user: Redirect to login page
+      navigate('/login');
     }
   };
 
