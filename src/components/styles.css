@@ -185,6 +185,10 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius-lg);
 }
 
+.margin-started{
+  margin-top: 10px;
+}
+
 .btn-full {
   width: 100%;
 }

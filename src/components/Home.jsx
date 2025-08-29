@@ -65,7 +65,7 @@ const Home = () => {
               <p className="offer-mini-text">We tailor downloads for better quality and smaller file size across phones and tablets.</p>
             </div>
           </div>
-          <button className="btn btn-primary btn-large" onClick={handleGetStarted}>Get Started</button>
+          <button className="btn btn-primary btn-large margin-started" onClick={handleGetStarted}>Get Started</button>
         </div>
         <div className="hero-background">
           <div className="movie-collage"></div>

@@ -46,7 +46,7 @@ const RequestMovieModal = ({ movie, isOpen, onClose, onSubmit }) => {
             src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} 
             alt={movie.title} 
           />
-          <div>
+          <div  className="text-movie">
             <h3>{movie.title}</h3>
             <p><strong>Release Date:</strong> {movie.release_date}</p>
             <p><strong>Overview:</strong> {movie.overview}</p>
