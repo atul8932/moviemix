@@ -26,7 +26,7 @@ const AppContent = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/waiting/:mobile" element={<WaitingPage />} />
           <Route path="/waiting" element={<WaitingPage />} />
-          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/adminchannel123" element={<AdminPanel />} />
           <Route path="/contact-us" element={<ContactUs />} />
           <Route path="/refund-policies" element={<RefundPolicies />} />
           <Route path="/cancellation-policy" element={<CancellationPolicy />} />
@@ -40,7 +40,7 @@ const AppContent = () => {
 
       {/* Show footer everywhere except dashboard */}
       {location.pathname !== "/dashboard" && <Footer />}
-    </div>
+    </div>                          
   );
 };
 
