@@ -54,6 +54,57 @@
   background: #0056b3;
 }
 
+/* Enhanced Search Styles */
+.search-input-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.search-loading {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+}
+
+.search-results-summary {
+  margin-top: 1rem;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+  text-align: center;
+}
+
+.search-results-summary p {
+  margin: 0;
+  color: #495057;
+  font-size: 14px;
+}
+
+.search-results-summary strong {
+  color: #007bff;
+  font-weight: 600;
+}
+
+/* Loading Spinner */
+.loading-spinner-small {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* Genre Dropdown Styles */
 .genre-dropdown {
   position: relative;

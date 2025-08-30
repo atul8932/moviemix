@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import SearchBar from './SearchBar/SearchBar';
+import SearchResults from './SearchResults';
 import SortingControls from './SortingControls/SortDropdown';
 import MovieGrid from './MovieGrid/MovieGrid';
 import PaginationControls from './Pagination/PaginationControls';
@@ -53,6 +54,7 @@ const MovieDashboard = () => {
   const [currentPage, setCurrentPage] = useState(parseInt(params.get('page') || '1', 10));
   const [totalPages, setTotalPages] = useState(0);
   const [totalResults, setTotalResults] = useState(0);
+  const [isSearchMode, setIsSearchMode] = useState(false);
   
   // Modal state
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -144,6 +146,14 @@ const MovieDashboard = () => {
     setSelectedGenres(genresIn);
     setSearchKeyword(keyword);
     setCurrentPage(1);
+    
+    // Set search mode if there's a keyword
+    setIsSearchMode(!!keyword && keyword.trim() !== '');
+  };
+
+  const handleSearchResults = (results, keyword) => {
+    // This will be called by SearchResults component
+    console.log('Search results received:', results);
   };
 
   const handleSortChange = (newSortBy) => {
@@ -251,6 +261,7 @@ const MovieDashboard = () => {
         onSearch={handleSearch}
         selectedGenres={selectedGenres}
         searchKeyword={searchKeyword}
+        onSearchResults={handleSearchResults}
       />
       
       <div className="dashboard-controls">
@@ -265,21 +276,36 @@ const MovieDashboard = () => {
         )}
       </div>
 
-      {loading && <div className="loading">Loading...</div>}
-      {error && <div className="error">{error}</div>}
-      {items.length > 0 && (
+      {/* Show Search Results when in search mode */}
+      {isSearchMode && searchKeyword && (
+        <SearchResults
+          searchQuery={searchKeyword}
+          onRequestMovie={handleRequestMovie}
+          onTriggerWhatsApp={triggerWhatsApp}
+          onCardClick={handleCardClick}
+        />
+      )}
+
+      {/* Show regular movie grid when not in search mode */}
+      {!isSearchMode && (
         <>
-          <MovieGrid 
-            movies={items} 
-            onCardClick={handleCardClick}
-            onRequestMovie={handleRequestMovie} // Add this prop
-            onTriggerWhatsApp={triggerWhatsApp} // Add this prop
-          />
-          <PaginationControls
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
+          {loading && <div className="loading">Loading...</div>}
+          {error && <div className="error">{error}</div>}
+          {items.length > 0 && (
+            <>
+              <MovieGrid 
+                movies={items} 
+                onCardClick={handleCardClick}
+                onRequestMovie={handleRequestMovie}
+                onTriggerWhatsApp={triggerWhatsApp}
+              />
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </>
+          )}
         </>
       )}
 
