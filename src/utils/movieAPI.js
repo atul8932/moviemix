@@ -31,6 +31,31 @@ export const movieAPI = {
     return await fetchGenresData();
   },
 
+  async searchMovies(query, page = 1) {
+    try {
+      const response = await fetch(`/api/search-movies?query=${encodeURIComponent(query)}&page=${page}`);
+      if (!response.ok) {
+        throw new Error('Failed to search movies');
+      }
+      
+      const data = await response.json();
+      
+      // If we have movies and genres data, convert genre IDs to names
+      if (data.results && data.results.length > 0) {
+        const genresData = await this.getGenres();
+        data.results = data.results.map(movie => ({
+          ...movie,
+          genre_names: getGenreNames(movie.genre_ids, genresData)
+        }));
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Error searching movies:', error);
+      throw error;
+    }
+  },
+
   async discoverMovies(filters = {}) {
     try {
       const queryParams = new URLSearchParams();
