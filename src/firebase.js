@@ -7,13 +7,13 @@ import { getAnalytics } from "firebase/analytics";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCdxM1pJV8oAEcpp3stf1lU-i3cc1aVgZQ",
-  authDomain: "moviemix-e1c54.firebaseapp.com",
-  projectId: "moviemix-e1c54",
-  storageBucket: "moviemix-e1c54.firebasestorage.app",
-  messagingSenderId: "332490065737",
-  appId: "1:332490065737:web:03f6eff180357e5d15fc98",
-  measurementId: "G-FTHTD2939Z"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCdxM1pJV8oAEcpp3stf1lU-i3cc1aVgZQ",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "moviemix-e1c54.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "moviemix-e1c54",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "moviemix-e1c54.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "332490065737",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:332490065737:web:03f6eff180357e5d15fc98",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-FTHTD2939Z"
 };
 
 // Initialize Firebase

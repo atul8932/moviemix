@@ -15,10 +15,14 @@ export default defineConfig({
         secure: false,
         configure: (proxy, options) => {
           proxy.on('error', (err, req, res) => {
-            console.log('Proxy error:', err);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Proxy error:', err);
+            }
           });
           proxy.on('proxyReq', (proxyReq, req, res) => {
-            console.log('Proxying:', req.method, req.url, '→', options.target);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Proxying:', req.method, req.url, '→', options.target);
+            }
           });
         },
       },
@@ -29,7 +33,9 @@ export default defineConfig({
         secure: true,
         configure: (proxy, options) => {
           proxy.on('proxyReq', (proxyReq, req, res) => {
-            console.log('Proxying Cashfree:', req.method, req.url, '→', options.target);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Proxying Cashfree:', req.method, req.url, '→', options.target);
+            }
           });
         },
       },
@@ -37,11 +43,18 @@ export default defineConfig({
   },
   // Development-specific settings
   define: {
-    __DEV__: true,
+    __DEV__: process.env.NODE_ENV === 'development',
   },
-  // Optimize for development
+  // Optimize for production
   build: {
-    sourcemap: true,
+    sourcemap: false, // Disable sourcemaps in production
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Remove console.log in production
+        drop_debugger: true,
+      },
+    },
   },
 })
 
