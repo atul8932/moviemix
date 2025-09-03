@@ -1,5 +1,13 @@
----
-description:
-globs:
-alwaysApply: false
----
+rules:
+  - match: "*"
+    instruction: |
+      Whenever I request code or a change:
+      1. **First**, create a **Code Changes Documentation (CCD)** in Markdown with:
+         - **Files Affected:** List of file paths impacted.
+         - **New Functions/Components:** Summaries of newly added code blocks.
+         - **Modified Functions/Components:** What was changed and why.
+         - **Removed/Deprecated Code (if any):** With reasons for removal.
+         - **Example Usage or Impact:** How this change affects existing logic or usage.
+      2. **Then**, provide the actual code implementation in a separate block.
+      3. Keep **CCD** and **code** clearly separated for easy review.
+
