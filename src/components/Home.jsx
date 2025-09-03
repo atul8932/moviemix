@@ -3,6 +3,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import "./styles.css";
+import { Analytics } from '@vercel/analytics/react';
+
+
 
 const Home = () => {
   const navigate = useNavigate();
@@ -72,7 +75,7 @@ const Home = () => {
         </div>
       </main>
 
-
+      <Analytics />
     </div>
   );
 };
